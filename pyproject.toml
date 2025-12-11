@@ -1,0 +1,9 @@
+[project]
+name = "celery-doc-zh"
+version = "0.1.0"
+description = "Celery - 分布式任务队列"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "mkdocs-material>=9.7.0",
+]
