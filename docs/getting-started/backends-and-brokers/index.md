@@ -52,7 +52,7 @@ RabbitMQ 是一个代理（broker）。
 
 SQS 是一个代理（broker）。
 
-如果您已经与 AWS 紧密集成，并且熟悉 SQS，它作为一个代理是一个很好的选择。它极其可扩展且完全托管，任务委派方式与 RabbitMQ 类似。但它缺少 RabbitMQ 代理的一些功能，例如 ``worker remote control commands``。
+如果您已经与 AWS 紧密集成，并且熟悉 SQS，它作为一个代理是一个很好的选择。它极其可扩展且完全托管，任务委派方式与 RabbitMQ 类似。但它缺少 RabbitMQ 代理的一些功能，例如 `worker remote control commands`。
 
 ### SQLAlchemy
 
