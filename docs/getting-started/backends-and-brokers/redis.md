@@ -1,3 +1,7 @@
+---
+description: Celery Redis配置指南：详细讲解如何在Celery中使用Redis作为消息代理和结果后端，包括安装依赖、URL格式配置、可见性超时设置、无服务器Redis集成（Upstash和Dragonfly）以及关键注意事项如软关闭、键驱逐和组结果排序等最佳实践。
+---
+
 # 使用 Redis
 
 ## 安装
