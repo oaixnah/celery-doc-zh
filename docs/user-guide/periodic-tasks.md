@@ -115,7 +115,7 @@ app.conf.timezone = 'UTC'
 
 使用 `timedelta` 作为调度意味着任务将以30秒的间隔发送（第一个任务将在 `celery beat` 启动后30秒发送，然后在每次运行后30秒发送）。
 
-还存在类似 Crontab 的调度，请参阅 `Crontab schedules`_ 部分。
+还存在类似 Crontab 的调度，请参阅 `Crontab schedules` 部分。
 
 与 `cron` 类似，如果第一个任务在下一个任务开始前未完成，任务可能会重叠。如果这是一个问题，您应该使用锁定策略来确保一次只能运行一个实例。
 
