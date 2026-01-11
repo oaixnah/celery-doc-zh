@@ -377,7 +377,7 @@ redis-cli -h HOST -p PORT -n DATABASE_NUMBER keys \*
 
     此外，如果您将 Redis 用于其他目的，`keys` 命令的输出将包括数据库中存储的不相关值。推荐的解决方法是使用专用的 `DATABASE_NUMBER` 给 Celery，您也可以使用数据库编号来将 Celery 应用程序彼此分开（虚拟主机），但这不会影响监控事件，例如 Flower 使用的Redis pub/sub 命令是全局的，而不是基于数据库的。
 
-## Munin
+## Munin {#monitoring-munin}
 
 这是一个已知的Munin插件列表，在维护Celery集群时可能很有用。
 
