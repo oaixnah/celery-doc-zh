@@ -3,7 +3,7 @@ subtitle: Routing Tasks
 description: Celery任务路由指南：学习自动路由、手动路由、优先级设置和广播功能，掌握AMQP基础知识和队列配置技巧，实现高效的任务分发和管理。
 ---
 
-# 路由任务
+# 路由任务 {#routing-basics}
 
 ## 基础
 
