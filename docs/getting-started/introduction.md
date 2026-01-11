@@ -11,11 +11,11 @@ description: Celery是一个用Python编写的分布式任务队列系统，支�
 
 任务队列的输入称为任务的工作单元。专用的工作进程持续监控任务队列以执行新的工作。
 
-Celery通过消息进行通信，通常使用代理在客户端和工作进程之间进行中介。要启动任务，客户端会向队列添加消息，然后代理将该消息传递给工作进程。
+Celery 通过消息进行通信，通常使用代理在客户端和工作进程之间进行中介。要启动任务，客户端会向队列添加消息，然后代理将该消息传递给工作进程。
 
-一个Celery系统可以包含多个工作进程和代理，从而实现高可用性和水平扩展。
+一个 Celery 系统可以包含多个工作进程和代理，从而实现高可用性和水平扩展。
 
-Celery是用Python编写的，但该协议可以用任何语言实现。除了Python之外，还有Node.js的node-celery_、[PHP客户端](https://github.com/gjedeer/celery-php)、[gocelery](https://github.com/gocelery/gocelery)、[gopher-celery](https://github.com/marselester/gopher-celery)和[rusty-celery](https://github.com/rusty-celery/rusty-celery)。
+Celery 是用 Python 编写的，但该协议可以用任何语言实现。除了 Python 之外，还有 Node.js 的 node-celery、[PHP客户端](https://github.com/gjedeer/celery-php)、[gocelery](https://github.com/gocelery/gocelery)、[gopher-celery](https://github.com/marselester/gopher-celery)和[rusty-celery](https://github.com/rusty-celery/rusty-celery)。
 
 语言互操作性也可以通过暴露HTTP端点并让任务请求它（webhooks）来实现。
 
@@ -41,17 +41,13 @@ Celery是用Python编写的，但该协议可以用任何语言实现。除了Py
     因此我们不支持Microsoft Windows。
     请不要打开与该平台相关的任何问题。
 
-*Celery*需要一个消息传输器来发送和接收消息。
-RabbitMQ和Redis代理传输器功能完整，
-但也支持许多其他实验性解决方案，包括
-使用SQLite进行本地开发。
+*Celery* 需要一个消息传输器来发送和接收消息。RabbitMQ和Redis代理传输器功能完整，但也支持许多其他实验性解决方案，包括使用SQLite进行本地开发。
 
-*Celery*可以在单台机器、多台机器甚至跨数据中心运行。
+*Celery* 可以在单台机器、多台机器甚至跨数据中心运行。
 
 ## 开始使用
 
-如果您是第一次尝试使用Celery，或者您没有跟上3.1版本的开发并且来自之前的版本，
-那么您应该阅读我们的入门教程：
+如果您是第一次尝试使用Celery，或者您没有跟上3.1版本的开发并且来自之前的版本，那么您应该阅读我们的入门教程：
 
 - [快速上手](first-steps-with-celery.md){target="_blank"}
 - [后续步骤](next-steps.md){target="_blank"}
@@ -76,20 +72,15 @@ def hello():
 
 ### 高可用性
 
-工作进程和客户端在连接丢失或失败时会自动重试，
-并且一些代理支持*主/主*或*主/副本*复制方式的高可用性。
+工作进程和客户端在连接丢失或失败时会自动重试，并且一些代理支持*主/主*或*主/副本*复制方式的高可用性。
 
 ### 快速
 
-单个Celery进程每分钟可以处理数百万个任务，
-具有亚毫秒级的往返延迟（使用RabbitMQ、
-librabbitmq和优化设置）。
+单个Celery进程每分钟可以处理数百万个任务，具有亚毫秒级的往返延迟（使用RabbitMQ、librabbitmq和优化设置）。
 
 ### 灵活
 
-*Celery*的几乎每个部分都可以扩展或单独使用，
-自定义池实现、序列化器、压缩方案、日志记录、
-调度器、消费者、生产者、代理传输器等等。
+*Celery*的几乎每个部分都可以扩展或单独使用，自定义池实现、序列化器、压缩方案、日志记录、调度器、消费者、生产者、代理传输器等等。
 
 ## 它支持
 
@@ -140,30 +131,19 @@ librabbitmq和优化设置）。
 
 ### 时间和速率限制
 
-您可以控制每秒/分钟/小时可以执行多少个任务，
-或者任务可以运行多长时间，这可以设置为
-默认值、针对特定工作进程或针对每个任务类型单独设置。[了解更多](../user-guide/workers.md#time-limits)。
+您可以控制每秒/分钟/小时可以执行多少个任务，或者任务可以运行多长时间，这可以设置为默认值、针对特定工作进程或针对每个任务类型单独设置。[了解更多](../user-guide/workers.md#time-limits)。
 
 ### 调度
 
-您可以以秒为单位或使用
-[`datetime`](https://docs.python.org/dev/library/datetime.html#datetime.datetime){target="_blank"}指定任务运行时间，或者您可以使用
-基于简单间隔的周期性任务来处理重复事件，
-或者使用支持分钟、小时、星期几、月份日期和
-年份月份的Crontab表达式。[了解更多](../user-guide/periodic-tasks.md#starting-the-scheduler)。
+您可以以秒为单位或使用 [`datetime`](https://docs.python.org/dev/library/datetime.html#datetime.datetime){target="_blank"}指定任务运行时间，或者您可以使用基于简单间隔的周期性任务来处理重复事件，或者使用支持分钟、小时、星期几、月份日期和年份月份的Crontab表达式。[了解更多](../user-guide/periodic-tasks.md#starting-the-scheduler)。
 
 ### 资源泄漏保护
 
-[`--max-tasks-per-child`](https://docs.celeryq.dev/en/stable/reference/cli.html#cmdoption-celery-worker-max-tasks-per-child)
-选项用于处理用户任务泄漏资源的情况，比如内存或
-文件描述符，这些完全超出您的控制范围。[了解更多](../user-guide/workers.md#max-tasks-per-child)。
+[`--max-tasks-per-child`](https://docs.celeryq.dev/en/stable/reference/cli.html#cmdoption-celery-worker-max-tasks-per-child)选项用于处理用户任务泄漏资源的情况，比如内存或文件描述符，这些完全超出您的控制范围。[了解更多](../user-guide/workers.md#max-tasks-per-child)。
 
 ### 用户组件
 
-每个工作进程组件都可以自定义，并且用户可以
-定义其他组件。工作进程使用"bootsteps"构建——
-一个依赖关系图，可以精细控制工作进程的
-内部结构。
+每个工作进程组件都可以自定义，并且用户可以定义其他组件。工作进程使用"bootsteps"构建——一个依赖关系图，可以精细控制工作进程的内部结构。
 
 - [Eventlet](http://eventlet.net/)
 - [gevent](http://gevent.org/)
