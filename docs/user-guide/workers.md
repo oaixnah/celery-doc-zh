@@ -747,7 +747,7 @@ $ celery -A proj inspect active_queues -d celery@worker1.local
       'kwargs': '{}'}]}]
 ```
 
-### 统计信息
+### 统计信息 {#worker-statistics}
 
 远程控制命令 `inspect stats`（或 `stats()`）将为您提供有关工作进程的有用（或不太有用）统计信息的长列表：
 
