@@ -1,0 +1,113 @@
+site_name: Celery 中文文档
+site_url: https://celery.oaix.tech/
+site_description: Celery 中文文档
+site_author: oaixnah
+copyright: 译者 <a href="https://github.com/oaixnah" target="_blank">oaixnah</a>
+repo_name: celery/celery
+repo_url: https://github.com/celery/celery
+theme:
+  name: 'material'
+  language: zh
+  logo: assets/celery_128.png
+  favicon: assets/favicon.ico
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: green
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+    - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - navigation.tabs
+    - navigation.expand
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
+    - search.share
+    - toc.follow
+markdown_extensions:
+  - abbr
+  - attr_list
+  - pymdownx.snippets
+  - tables
+  - toc:
+      permalink: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      pygments_lang_class: true
+  - pymdownx.extra
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+plugins:
+  - search
+  - exclude:
+      glob:
+        - '*_en.md'
+nav:
+  - 首页: index.md
+  - 快速入门:
+      - 介绍: getting-started/introduction.md
+      - 后端与代理:
+        - getting-started/backends-and-brokers/index.md
+        - Redis: getting-started/backends-and-brokers/redis.md
+        - RabbitMQ: getting-started/backends-and-brokers/rabbitmq.md
+        - SQS: getting-started/backends-and-brokers/sqs.md
+        - Kafka: getting-started/backends-and-brokers/kafka.md
+        - Google Pub/Sub: getting-started/backends-and-brokers/gcpubsub.md
+      - 快速上手: getting-started/first-steps-with-celery.md
+      - 后续步骤: getting-started/next-steps.md
+  - 用户指南:
+      - 应用程序: user-guide/application.md
+      - 任务: user-guide/tasks.md
+      - 调用: user-guide/calling.md
+      - 画布: user-guide/canvas.md
+      - 工作进程: user-guide/workers.md
+      - 守护进程: user-guide/daemonizing.md
+      - 周期性任务: user-guide/periodic-tasks.md
+      - 路由任务: user-guide/routing.md
+      - 监控与管理: user-guide/monitoring.md
+      - 安全: user-guide/security.md
+      - 优化: user-guide/optimizing.md
+      - 调试: user-guide/debugging.md
+      - 并发:
+        - user-guide/concurrency/index.md
+        - Eventlet: user-guide/concurrency/eventlet.md
+        - Gevent: user-guide/concurrency/gevent.md
+      - 信号: user-guide/signals.md
+      - 测试: user-guide/testing.md
+      - 扩展: user-guide/extending.md
+      - 配置: user-guide/configuration.md
+  - Django: django.md
+  - QA: faq.md
