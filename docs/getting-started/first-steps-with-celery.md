@@ -137,13 +137,13 @@ False
 
     后端使用资源来存储和传输结果。为确保资源被释放，最终必须对调用任务后返回的每个 `AsyncResult` 实例调用 `get()` 或 `forget()` 方法。
 
-有关完整的结果对象参考，请参阅 :mod:`celery.result`。
+有关完整的结果对象参考，请参阅 `celery.result`。
 
 ## 7. 配置 {#celerytut-configuration}
 
 Celery 就像一个家用电器，不需要太多配置即可运行。它有一个输入和一个输出。输入必须连接到代理（broker），输出可以选择性地连接到结果后端（result backend）。但是，如果仔细查看背面，会发现一个盖子，里面有很多滑块、刻度盘和按钮：这就是配置。
 
-默认配置应该足以满足大多数用例，但有许多选项可以配置，以使 Celery 完全按照需要工作。阅读可用选项是熟悉可配置内容的好方法。可以在 :ref:`configuration` 参考中阅读有关选项的信息。
+默认配置应该足以满足大多数用例，但有许多选项可以配置，以使 Celery 完全按照需要工作。阅读可用选项是熟悉可配置内容的好方法。可以在 [配置](../user-guide/configuration.md) 参考中阅读有关选项的信息。
 
 配置可以直接在应用程序上设置，也可以通过专用配置模块设置。
 例如，可以通过更改 `task_serializer` 设置来配置用于序列化任务负载的默认序列化器：
@@ -243,7 +243,7 @@ worker@example.com: OK
 
 - 其他系统：
 
-    如果提供 `--pidfile <celery worker --pidfile>`、`--logfile <celery worker --logfile>` 或 `--statedb <celery worker --statedb>` 参数中的任何一个，则必须确保它们指向启动工作进程的用户可写和可读的文件或目录。
+    如果提供 `celery worker --pidfile`、`celery worker --logfile` 或 `celery worker --statedb` 参数中的任何一个，则必须确保它们指向启动工作进程的用户可写和可读的文件或目录。
 
 ### 结果后端不工作或任务始终处于 `PENDING` 状态
 
@@ -261,7 +261,7 @@ worker@example.com: OK
 
     一个未配置预期结果后端的旧工作进程可能正在运行并劫持任务。
 
-    可以将 `--pidfile <celery worker --pidfile>` 参数设置为绝对路径以确保不会发生这种情况。
+    可以将 `celery worker --pidfile` 参数设置为绝对路径以确保不会发生这种情况。
 
 4. 确保客户端配置了正确的后端。
 
