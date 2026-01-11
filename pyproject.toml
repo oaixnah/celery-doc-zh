@@ -1,9 +1,11 @@
 [project]
 name = "celery-doc-zh"
 version = "0.1.0"
-description = "Celery - 分布式任务队列"
+description = "Celery 中文文档"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "mkdocs-exclude>=1.0.2",
     "mkdocs-material>=9.7.0",
+    "zensical>=0.0.15",
 ]
