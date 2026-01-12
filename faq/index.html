@@ -1,0 +1,3485 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Celery常见问题解答 - 全面解析Python分布式任务队列的疑问，涵盖任务调度、消息代理、故障排除、安全配置、性能优化等核心问题，提供详细的解决方案和最佳实践指南。">
+      
+      
+        <meta name="author" content="oaixnah">
+      
+      
+        <link rel="canonical" href="https://celery.oaix.tech/faq/">
+      
+      
+        <link rel="prev" href="../django/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/favicon.ico">
+      <meta name="generator" content="zensical-0.0.15">
+    
+    
+      
+        <title>常见问题解答 - Celery 中文文档</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.f1b6466b.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+  
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+  
+  <style>:root{}</style>
+
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href=".." title="Celery 中文文档" class="md-header__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+      
+  <img src="../assets/celery_128.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Celery 中文文档
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              常见问题解答
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="查找">
+  <button type="button" class="md-search__button">
+    查找
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/celery/celery" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    celery/celery
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../getting-started/introduction/" class="md-tabs__link">
+          
+  
+  快速入门
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../user-guide/application/" class="md-tabs__link">
+          
+  
+  用户指南
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../django/" class="md-tabs__link">
+        
+  
+  Django
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  QA
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden>
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Celery 中文文档" class="md-nav__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+      
+  <img src="../assets/celery_128.png" alt="logo">
+
+    </a>
+    Celery 中文文档
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/celery/celery" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    celery/celery
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速入门
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    快速入门
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    介绍
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../getting-started/backends-and-brokers/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后端与代理
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    后端与代理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/backends-and-brokers/redis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/backends-and-brokers/rabbitmq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RabbitMQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/backends-and-brokers/sqs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SQS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/backends-and-brokers/kafka/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kafka
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/backends-and-brokers/gcpubsub/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Google Pub/Sub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/first-steps-with-celery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速上手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后续步骤
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    用户指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    用户指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/application/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    应用程序
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/calling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/canvas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    画布
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/workers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工作进程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/daemonizing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    守护进程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/periodic-tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    周期性任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/routing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    路由任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    监控与管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安全
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/optimizing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_13" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../user-guide/concurrency/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    并发
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_13" id="__nav_3_13_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    并发
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/concurrency/eventlet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eventlet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/concurrency/gevent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gevent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/signals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    信号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/extending/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    扩展
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    配置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../django/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Django
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        概述
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="概述">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#celery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我应该使用 Celery 来做什么？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        误解
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="误解">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#celery-50000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 真的包含 50,000 行代码吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celery_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 有很多依赖项吗？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Celery 有很多依赖项吗？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#celery_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        celery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kombu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kombu
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celery_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 是重量级的吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celery-pickle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 依赖于 pickle 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celery-django" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 只适用于 Django 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#amqprabbitmq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我必须使用 AMQP/RabbitMQ 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celery_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 是多语言的吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        故障排除
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="故障排除">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mysql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MySQL 抛出死锁错误，我该怎么办？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worker 什么都不做，只是挂起
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        任务结果不可靠地返回
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#taskdelayapplyworker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么 Task.delay/apply*/worker 只是挂起？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freebsd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        它能在 FreeBSD 上工作吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integrityerror-duplicate-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我遇到了 IntegrityError: Duplicate Key 错误。为什么？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么我的任务没有被处理？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么我的任务不运行？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么我的周期性任务不运行？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        如何清除所有等待的任务？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我已经清除了消息，但队列中仍有消息？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        结果
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="结果">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        如果我有指向任务的ID，如何获取任务的结果？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        安全
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="安全">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pickle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        使用 pickle 是否存在安全风险？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        消息可以加密吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-programcelery-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        以 root 身份运行 :program:celery worker 安全吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        消息代理
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="消息代理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rabbitmq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么 RabbitMQ 会崩溃？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celery-activemqstomp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以在 Celery 中使用 ActiveMQ/STOMP 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#amqp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        不使用 AMQP 代理时，哪些功能不受支持？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        任务
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="任务">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        如何在调用任务时重用相同的连接？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#subprocess-sudo-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        在 subprocess 中的 sudo 返回 None
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么 worker 会从队列中删除无法处理的任务？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以通过名称调用任务吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以获取当前任务的 task id 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以指定自定义的 task_id 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以在任务中使用装饰器吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以使用自然的任务 id 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以在另一个任务完成后运行一个任务吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以取消任务的执行吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么我的远程控制命令没有被所有 worker 接收？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以将某些任务仅发送到某些服务器吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以禁用任务的预取吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以在运行时更改周期性任务的间隔吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celery_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 支持任务优先级吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retry-acks_lateacks_late-vs-retry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我应该使用 retry 还是 acks_late？{#acks_late-vs-retry}
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以安排任务在特定时间执行吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以安全地关闭 worker 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#platform-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以在 [platform] 的后台运行 worker 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#django" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Django
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Django">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#django-celery-beat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        django-celery-beat 创建的数据库表有什么用途？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#django-celery-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        django-celery-results 创建的数据库表有什么用途？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Windows
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Windows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#celery-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 是否支持 Windows？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        概述
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="概述">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#celery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我应该使用 Celery 来做什么？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        误解
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="误解">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#celery-50000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 真的包含 50,000 行代码吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celery_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 有很多依赖项吗？
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Celery 有很多依赖项吗？">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#celery_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        celery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kombu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kombu
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celery_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 是重量级的吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celery-pickle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 依赖于 pickle 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celery-django" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 只适用于 Django 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#amqprabbitmq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我必须使用 AMQP/RabbitMQ 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celery_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 是多语言的吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        故障排除
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="故障排除">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mysql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MySQL 抛出死锁错误，我该怎么办？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worker 什么都不做，只是挂起
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        任务结果不可靠地返回
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#taskdelayapplyworker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么 Task.delay/apply*/worker 只是挂起？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freebsd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        它能在 FreeBSD 上工作吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integrityerror-duplicate-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我遇到了 IntegrityError: Duplicate Key 错误。为什么？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么我的任务没有被处理？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么我的任务不运行？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么我的周期性任务不运行？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        如何清除所有等待的任务？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我已经清除了消息，但队列中仍有消息？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        结果
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="结果">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        如果我有指向任务的ID，如何获取任务的结果？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        安全
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="安全">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pickle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        使用 pickle 是否存在安全风险？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        消息可以加密吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-programcelery-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        以 root 身份运行 :program:celery worker 安全吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        消息代理
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="消息代理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rabbitmq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么 RabbitMQ 会崩溃？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celery-activemqstomp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以在 Celery 中使用 ActiveMQ/STOMP 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#amqp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        不使用 AMQP 代理时，哪些功能不受支持？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        任务
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="任务">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        如何在调用任务时重用相同的连接？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#subprocess-sudo-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        在 subprocess 中的 sudo 返回 None
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么 worker 会从队列中删除无法处理的任务？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以通过名称调用任务吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以获取当前任务的 task id 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以指定自定义的 task_id 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以在任务中使用装饰器吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以使用自然的任务 id 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以在另一个任务完成后运行一个任务吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以取消任务的执行吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么我的远程控制命令没有被所有 worker 接收？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以将某些任务仅发送到某些服务器吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以禁用任务的预取吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以在运行时更改周期性任务的间隔吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celery_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 支持任务优先级吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retry-acks_lateacks_late-vs-retry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我应该使用 retry 还是 acks_late？{#acks_late-vs-retry}
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以安排任务在特定时间执行吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以安全地关闭 worker 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#platform-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        我可以在 [platform] 的后台运行 worker 吗？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#django" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Django
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Django">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#django-celery-beat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        django-celery-beat 创建的数据库表有什么用途？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#django-celery-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        django-celery-results 创建的数据库表有什么用途？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Windows
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Windows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#celery-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery 是否支持 Windows？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+  
+
+
+<h1 id="_1">常见问题解答<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h2 id="_2">概述<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h3 id="celery">我应该使用 Celery 来做什么？<a class="headerlink" href="#celery" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> <a href="https://decafbad.com/blog/2008/07/04/queue-everything-and-delight-everyone">队列化一切，让所有人满意</a> 是一篇很好的文章，描述了为什么在 Web 环境中使用队列。</p>
+<p>以下是一些常见的用例：</p>
+<ul>
+<li>
+<p>在后台运行某些任务。例如，尽快完成 Web 请求，
+  然后逐步更新用户页面。
+  这给用户留下了良好性能和"响应迅速"的印象，即使
+  实际工作可能需要一些时间。</p>
+</li>
+<li>
+<p>在 Web 请求完成后运行某些任务。</p>
+</li>
+<li>
+<p>通过异步执行和使用重试机制来确保某些任务完成。</p>
+</li>
+<li>
+<p>调度定期工作。</p>
+</li>
+</ul>
+<p>在某种程度上还包括：</p>
+<ul>
+<li>
+<p>分布式计算。</p>
+</li>
+<li>
+<p>并行执行。</p>
+</li>
+</ul>
+<h2 id="_3">误解<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<h3 id="celery-50000">Celery 真的包含 50,000 行代码吗？<a class="headerlink" href="#celery-50000" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 不，这个以及类似的大数字已经在多个地方被报告过。</p>
+<p>截至本文撰写时的数字是：</p>
+<ul>
+<li>核心：7,141 行代码</li>
+<li>测试：14,209 行</li>
+<li>后端、贡献、兼容性工具：9,032 行</li>
+</ul>
+<p>代码行数不是一个有用的指标，所以即使 Celery 确实包含 50k 行代码，你也不能从这样的数字中得出任何结论。</p>
+<h3 id="celery_1">Celery 有很多依赖项吗？<a class="headerlink" href="#celery_1" title="Permanent link">&para;</a></h3>
+<p>一个常见的批评是 Celery 使用了太多的依赖项。
+这种担忧背后的理由很难想象，特别是考虑到代码重用是现代软件开发中对抗复杂性的既定方式，而且现在添加依赖项的成本非常低，因为像 pip 和 PyPI 这样的包管理器使得安装和维护依赖项的麻烦成为过去。</p>
+<p>Celery 在过程中已经替换了几个依赖项，当前的依赖项列表是：</p>
+<h4 id="celery_2">celery<a class="headerlink" href="#celery_2" title="Permanent link">&para;</a></h4>
+<ul>
+<li><code>kombu</code></li>
+</ul>
+<p>Kombu 是 Celery 生态系统的一部分，是用于发送和接收消息的库。它也是使我们能够支持许多不同消息代理的库。它也被 OpenStack 项目和许多其他项目使用，验证了将其与 Celery 代码库分离的选择。</p>
+<ul>
+<li><code>billiard</code></li>
+</ul>
+<p>Billiard 是 Python 多处理模块的一个分支，包含许多性能和稳定性改进。最终目标是这些改进有一天会被合并回 Python。</p>
+<p>它也用于与不包含多处理模块的旧版 Python 版本的兼容性。</p>
+<h4 id="kombu">kombu<a class="headerlink" href="#kombu" title="Permanent link">&para;</a></h4>
+<p>Kombu 依赖于以下包：</p>
+<ul>
+<li><code>amqp</code></li>
+</ul>
+<p>底层的纯 Python amqp 客户端实现。AMQP 作为默认代理，这是一个自然的依赖项。</p>
+<h3 id="celery_3">Celery 是重量级的吗？<a class="headerlink" href="#celery_3" title="Permanent link">&para;</a></h3>
+<p>Celery 在内存占用和性能方面都带来了非常小的开销。</p>
+<p>但请注意，默认配置没有针对时间或空间进行优化，请参阅 <a href="../optimizing/">优化指南</a> 以获取更多信息。</p>
+<h3 id="celery-pickle">Celery 依赖于 pickle 吗？<a class="headerlink" href="#celery-pickle" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 不，Celery 可以支持任何序列化方案。</p>
+<p>我们内置支持 JSON、YAML、Pickle 和 msgpack。每个任务都与一个内容类型相关联，因此你甚至可以使用 pickle 发送一个任务，使用 JSON 发送另一个任务。</p>
+<p>默认的序列化支持曾经是 pickle，但从 4.0 开始默认现在是 JSON。如果你需要发送复杂的 Python 对象作为任务参数，你可以使用 pickle 作为序列化格式。</p>
+<p>如果你需要与其他语言通信，你应该使用适合该任务的序列化格式，这基本上意味着任何不是 pickle 的序列化器。</p>
+<p>你可以设置全局默认序列化器、特定任务的默认序列化器，
+甚至是发送单个任务实例时要使用的序列化器。</p>
+<h3 id="celery-django">Celery 只适用于 Django 吗？<a class="headerlink" href="#celery-django" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 不，你可以在任何框架中使用 Celery，无论是 Web 框架还是其他框架。</p>
+<h3 id="amqprabbitmq">我必须使用 AMQP/RabbitMQ 吗？<a class="headerlink" href="#amqprabbitmq" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 不，虽然推荐使用 RabbitMQ，但你也可以使用 Redis、SQS 或 Qpid。</p>
+<p>Redis 作为代理的性能不如 AMQP 代理，但 RabbitMQ 作为代理和 Redis 作为结果存储的组合是常用的。如果你有严格的可靠性要求，鼓励你使用 RabbitMQ 或其他 AMQP 代理。一些传输也使用轮询，因此它们可能会消耗更多资源。然而，如果你由于某种原因无法使用 AMQP，请随意使用这些替代方案。它们可能适用于大多数用例，并请注意上述观点并非特定于 Celery；如果之前使用 Redis/数据库作为队列对你有效，现在可能仍然有效。如果需要，你以后可以随时升级。</p>
+<h3 id="celery_4">Celery 是多语言的吗？<a class="headerlink" href="#celery_4" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 是的。</p>
+<p><code>celery.bin.worker</code> 是 Celery 在 Python 中的实现。如果某种语言有 AMQP 客户端，创建该语言的 worker 应该不会太困难。一个 Celery worker 只是一个连接到代理来处理消息的程序。</p>
+<p>此外，还有另一种实现语言独立性的方法，那就是使用 REST 任务，不是将任务作为函数，而是将它们作为 URL。有了这个信息，你甚至可以创建简单的 Web 服务器，实现代码的预加载。只需暴露一个执行操作的端点，并创建一个任务来对该端点执行 HTTP 请求。</p>
+<p>你也可以使用 <a href="https://flower.readthedocs.io">Flower's</a> [REST API](https://flower.readthedocs.io/en/latest/api.html#post--api-task-async-apply-(.+) 来调用任务。</p>
+<h2 id="_4">故障排除<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<h3 id="mysql">MySQL 抛出死锁错误，我该怎么办？<a class="headerlink" href="#mysql" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> MySQL 默认的隔离级别设置为 <code>REPEATABLE-READ</code>（可重复读），如果您并不真正需要这个级别，请将其设置为 <code>READ-COMMITTED</code>（读已提交）。您可以通过在 :file:<code>my.cnf</code> 文件中添加以下内容来实现：：</p>
+<div class="language-text highlight"><pre><span></span><code>[mysqld]
+transaction-isolation = READ-COMMITTED
+</code></pre></div>
+<p>有关 InnoDB 事务模型的更多信息，请参阅 <a href="https://dev.mysql.com/doc/refman/5.1/en/innodb-transaction-model.html">MySQL - InnoDB 事务模型和锁定</a>。</p>
+<h3 id="worker">Worker 什么都不做，只是挂起<a class="headerlink" href="#worker" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 请参阅 <code>MySQL 抛出死锁错误，我该怎么办？</code>，或 <code>为什么 Task.delay/apply\*/worker 只是挂起？</code>。</p>
+<h3 id="_5">任务结果不可靠地返回<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 如果您使用数据库后端来存储结果，特别是使用 MySQL，请参阅 <code>MySQL 抛出死锁错误，我该怎么办？</code>。</p>
+<h3 id="taskdelayapplyworker">为什么 Task.delay/apply*/worker 只是挂起？<a class="headerlink" href="#taskdelayapplyworker" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 某些 AMQP 客户端存在一个错误，如果无法验证当前用户、密码不匹配或用户没有访问指定虚拟主机的权限，就会导致挂起。请务必检查您的代理日志（对于 RabbitMQ，在大多数系统上是 :file:<code>/var/log/rabbitmq/rabbit.log</code>），通常其中会包含描述原因的消息。</p>
+<h3 id="freebsd">它能在 FreeBSD 上工作吗？<a class="headerlink" href="#freebsd" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 这取决于具体情况；</p>
+<p>当使用 RabbitMQ（AMQP）和 Redis 传输时，它应该可以开箱即用。</p>
+<p>对于其他传输方式，会使用兼容性 prefork 池，这需要可用的 POSIX 信号量实现，自 FreeBSD 8.x 以来，FreeBSD 默认启用了此功能。对于较旧版本的 FreeBSD，您必须在内核中启用 POSIX 信号量并手动重新编译 billiard。</p>
+<p>幸运的是，Viktor Petersson 编写了一个教程，帮助您在 FreeBSD 上开始使用 Celery：
+http://www.playingwithwire.com/2009/10/how-to-get-celeryd-to-work-on-freebsd/</p>
+<h3 id="integrityerror-duplicate-key">我遇到了 <code>IntegrityError: Duplicate Key</code> 错误。为什么？<a class="headerlink" href="#integrityerror-duplicate-key" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 请参阅 <code>MySQL 抛出死锁错误，我该怎么办？</code>。</p>
+<h3 id="_6">为什么我的任务没有被处理？<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 使用 RabbitMQ 时，您可以通过运行以下命令查看当前有多少消费者正在接收任务：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">rabbitmqctl list_queues -p &lt;myvhost&gt; name messages consumers</span>
+<span class="go">Listing queues ...</span>
+<span class="go">celery     2891    2</span>
+</code></pre></div>
+<p>这显示任务队列中有 2891 条消息等待处理，有两个消费者正在处理它们。</p>
+<p>队列永远不会被清空的一个原因可能是您有一个陈旧的 worker 进程劫持了消息。如果 worker 没有正确关闭，就可能发生这种情况。</p>
+<p>当 worker 接收到消息时，代理会等待消息被确认后才将其标记为已处理。在消费者正确关闭之前，代理不会将该消息重新发送给另一个消费者。</p>
+<p>如果您遇到此问题，必须手动杀死所有 worker 并重新启动它们：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">pkill &#39;celery worker&#39;</span>
+
+<span class="gp"># </span>-<span class="w"> </span>如果您没有<span class="w"> </span>pkill，请使用：
+<span class="gp"># </span>ps<span class="w"> </span>auxww<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;/celery worker/ {print $2}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="w"> </span><span class="nb">kill</span>
+</code></pre></div>
+<p>您可能需要等待一段时间，直到所有 worker 完成执行任务。 如果长时间后仍然挂起，您可以使用强制方式杀死它们：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">pkill -9 &#39;celery worker&#39;</span>
+
+<span class="gp"># </span>-<span class="w"> </span>如果您没有<span class="w"> </span>pkill，请使用：
+<span class="gp"># </span>ps<span class="w"> </span>auxww<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;/celery worker/ {print $2}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="w"> </span><span class="nb">kill</span><span class="w"> </span>-9
+</code></pre></div>
+<h3 id="_7">为什么我的任务不运行？<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 可能存在语法错误阻止了任务模块的导入。</p>
+<p>您可以通过手动执行任务来检查 Celery 是否能够运行该任务：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">myapp.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">MyPeriodicTask</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MyPeriodicTask</span><span class="o">.</span><span class="n">delay</span><span class="p">()</span>
+</code></pre></div>
+<p>查看 worker 的日志文件，看看它是否能够找到任务，或者是否发生了其他错误。</p>
+<h3 id="_8">为什么我的周期性任务不运行？<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 请参阅 <code>为什么我的任务不运行？</code>。</p>
+<h3 id="_9">如何清除所有等待的任务？<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 您可以使用 <code>celery purge</code> 命令清除所有配置的任务队列：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj purge</span>
+</code></pre></div>
+<p>或者通过编程方式：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">proj.celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span>
+<span class="go">1753</span>
+</code></pre></div>
+<p>如果您只想清除特定队列中的消息，
+必须使用 AMQP API 或 <code>celery amqp</code> 实用程序：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj amqp queue.purge &lt;queue name&gt;</span>
+</code></pre></div>
+<p>数字 1753 是已删除消息的数量。</p>
+<p>您还可以在启动 worker 时启用 <code>celery worker --purge</code> 选项，以便在 worker 启动时清除消息。</p>
+<h3 id="_10">我已经清除了消息，但队列中仍有消息？<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 任务在实际执行后才会被确认（从队列中移除）。在 worker 接收到任务后，需要一些时间才能实际执行，特别是如果已经有大量任务等待执行时。未被确认的消息会被 worker 保留，直到它关闭与代理（AMQP 服务器）的连接。当该连接关闭时（例如，因为 worker 被停止），代理会将任务重新发送给下一个可用的 worker（或者在 worker 重新启动后发送给同一个 worker），因此要正确清除队列中的等待任务，您必须停止所有 worker，然后使用 <code>celery.control.purge</code> 清除任务。</p>
+<h2 id="_11">结果<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<h3 id="id">如果我有指向任务的ID，如何获取任务的结果？<a class="headerlink" href="#id" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：使用 <code>task.AsyncResult</code>：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">my_task</span><span class="o">.</span><span class="n">AsyncResult</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</code></pre></div>
+<p>这将为您提供一个 <code>celery.result.AsyncResult</code> 实例使用任务的当前结果后端。</p>
+<p>如果您需要指定自定义结果后端，或者想要使用当前应用程序的默认后端，您可以使用 <code>AsyncResult</code>：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">AsyncResult</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</code></pre></div>
+<h2 id="_12">安全<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<h3 id="pickle">使用 <code>pickle</code> 是否存在安全风险？<a class="headerlink" href="#pickle" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：确实如此，自 Celery 4.0 起，默认的序列化器已改为 JSON，以确保人们能够有意识地选择序列化器并意识到这一风险。</p>
+<p>保护您的代理、数据库和其他传输 pickle 数据的服务免受未经授权的访问至关重要。</p>
+<p>请注意，这不仅仅是 Celery 需要注意的问题，例如 Django 也使用 pickle 作为其缓存客户端。</p>
+<p>对于任务消息，您可以将 <code>task_serializer</code> 设置改为 "json" 或 "yaml" 而不是 pickle。同样地，对于任务结果，您可以设置 <code>result_serializer</code>。</p>
+<p>有关使用的格式以及在检查任务使用什么格式时的查找顺序的更多详细信息。</p>
+<h3 id="_13">消息可以加密吗？<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：一些 AMQP 代理支持使用 SSL（包括 RabbitMQ）。您可以使用 <code>broker_use_ssl</code> 设置来启用此功能。</p>
+<h3 id="root-programcelery-worker">以 root 身份运行 :program:<code>celery worker</code> 安全吗？<a class="headerlink" href="#root-programcelery-worker" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：不安全！</p>
+<p>我们目前没有发现任何安全问题，但假设不存在安全问题是极其天真的，因此建议以非特权用户身份运行 Celery 服务（<code>celery worker</code>、<code>celery beat</code>、<code>celeryev</code> 等）。</p>
+<h2 id="_14">消息代理<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
+<h3 id="rabbitmq">为什么 RabbitMQ 会崩溃？<a class="headerlink" href="#rabbitmq" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 如果 RabbitMQ 内存耗尽，它就会崩溃。这将在 RabbitMQ 的未来版本中得到修复。请参考 RabbitMQ 常见问题解答：
+https://www.rabbitmq.com/faq.html#node-runs-out-of-memory</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>这种情况已经不再存在，RabbitMQ 2.0 及以上版本包含了一个新的持久化器，能够容忍内存不足错误。建议为 Celery 使用 RabbitMQ 2.1 或更高版本。</p>
+<p>如果您仍在运行旧版本的 RabbitMQ 并遇到崩溃问题，请升级！</p>
+</div>
+<p>Celery 的错误配置最终可能导致旧版本 RabbitMQ 的崩溃。即使没有崩溃，这仍然会消耗大量资源，因此了解常见的陷阱非常重要。</p>
+<ul>
+<li>
+<p>事件。</p>
+<p>使用 <code>celery worker -E</code> 选项运行 <code>celery.bin.worker</code> 将发送工作器内部发生事件的消息。</p>
+<p>只有在有活动监视器消费这些事件时，或者定期清除事件队列时，才应启用事件。</p>
+</li>
+<li>
+<p>AMQP 后端结果。</p>
+<p>当使用 AMQP 结果后端运行时，每个任务结果都将作为消息发送。如果您不收集这些结果，它们会累积起来，RabbitMQ 最终会耗尽内存。</p>
+<p>这个结果后端现在已被弃用，因此您不应该使用它。对于 rpc 风格的调用使用 RPC 后端，或者如果您需要多消费者访问结果，请使用持久化后端。</p>
+<p>默认情况下，结果会在 1 天后过期。通过配置 <code>result_expires</code> 设置来降低此值可能是个好主意。</p>
+<p>如果您不使用任务的结果，请确保设置 <code>ignore_result</code> 选项：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">ignore_result</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mytask</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyTask</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
+    <span class="n">ignore_result</span> <span class="o">=</span> <span class="kc">True</span>
+</code></pre></div>
+</li>
+</ul>
+<h3 id="celery-activemqstomp">我可以在 Celery 中使用 ActiveMQ/STOMP 吗？<a class="headerlink" href="#celery-activemqstomp" title="Permanent link">&para;</a></h3>
+<p><strong>回答：</strong> 不可以。它曾经由 <code>Carrot</code>（我们的旧消息库）支持但目前在 <code>Kombu</code>（我们的新消息库）中不受支持。</p>
+<h3 id="amqp">不使用 AMQP 代理时，哪些功能不受支持？<a class="headerlink" href="#amqp" title="Permanent link">&para;</a></h3>
+<p>这是使用虚拟传输时不可用的功能不完整列表：</p>
+<ul>
+<li>远程控制命令（仅 Redis 支持）。</li>
+<li>使用事件进行监视可能无法在所有虚拟传输中工作。</li>
+<li><code>header</code> 和 <code>fanout</code> 交换类型（<code>fanout</code> 由 Redis 支持）。</li>
+</ul>
+<h2 id="_15">任务<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h2>
+<h3 id="_16">如何在调用任务时重用相同的连接？<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：请参阅 :setting:<code>broker_pool_limit</code> 设置。连接池自版本 2.5 起默认启用。</p>
+<h3 id="subprocess-sudo-none">在 <code>subprocess</code> 中的 <code>sudo</code> 返回 <code>None</code><a class="headerlink" href="#subprocess-sudo-none" title="Permanent link">&para;</a></h3>
+<p>有一个 <code>sudo</code> 配置选项使得没有 tty 的进程运行 <code>sudo</code> 是非法的：</p>
+<div class="language-text highlight"><pre><span></span><code>Defaults requiretty
+</code></pre></div>
+<p>如果在你的 <code>/etc/sudoers</code> 文件中有此配置，那么当 worker 作为守护进程运行时，任务将无法调用 <code>sudo</code>。如果你想启用此功能，则需要从 <code>/etc/sudoers</code> 中删除该行。</p>
+<p>参考：http://timelordz.com/wiki/Apache_Sudo_Commands</p>
+<h3 id="worker_1">为什么 worker 会从队列中删除无法处理的任务？<a class="headerlink" href="#worker_1" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：</p>
+<p>worker 会拒绝未知任务、编码错误的消息以及不包含适当字段的消息（根据任务消息协议）。</p>
+<p>如果不拒绝它们，它们可能会被重复传递，导致循环。</p>
+<p>RabbitMQ 的最新版本具有为交换配置死信队列的能力，因此被拒绝的消息会被移动到那里。</p>
+<h3 id="_17">我可以通过名称调用任务吗？<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：是的，使用 <code>send_task</code>。</p>
+<p>你也可以使用 AMQP 客户端从任何语言通过名称调用任务：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">send_task</span><span class="p">(</span><span class="s1">&#39;tasks.add&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{})</span>
+<span class="go">&lt;AsyncResult: 373550e8-b9a0-4666-bc61-ace01fa4f91d&gt;</span>
+</code></pre></div>
+<p>要使用 <code>chain</code>、<code>chord</code> 或 <code>group</code> 与按名称调用的任务，请使用 <code>Celery.signature</code> 方法：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">chain</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">app</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="s1">&#39;tasks.add&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{}),</span>
+<span class="gp">... </span>    <span class="n">app</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="s1">&#39;tasks.add&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{})</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">apply_async</span><span class="p">()</span>
+<span class="go">&lt;AsyncResult: e9d52312-c161-46f0-9013-2713e6df812d&gt;</span>
+</code></pre></div>
+<h3 id="task-id">我可以获取当前任务的 task id 吗？<a class="headerlink" href="#task-id" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：是的，当前 id 和更多信息在任务请求中可用：：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mytask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;Running&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>如果你没有对任务实例的引用，可以使用 <code>app.current_task</code>：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">current_task</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">id</span>
+</code></pre></div>
+<p>但请注意，这可能是任何任务，无论是 worker 执行的任务，还是该任务直接调用的任务，或者是急切调用的任务。</p>
+<p>要特别获取当前正在处理的任务，请使用 <code>app.current_worker_task</code>：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">current_worker_task</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">id</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>app.current_task</code> 和 <code>app.current_worker_task</code> 都可能为 <code>None</code>。</p>
+</div>
+<h3 id="task_id">我可以指定自定义的 task_id 吗？<a class="headerlink" href="#task_id" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：是的，使用 <code>Task.apply_async</code> 的 <code>task_id</code> 参数：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">task</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">task_id</span><span class="o">=</span><span class="s1">&#39;…&#39;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="_18">我可以在任务中使用装饰器吗？<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：是的。</p>
+<h3 id="id_1">我可以使用自然的任务 id 吗？<a class="headerlink" href="#id_1" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：是的，但要确保它是唯一的，因为两个具有相同 id 的任务的行为是未定义的。</p>
+<p>世界可能不会爆炸，但它们绝对可以覆盖彼此的结果。</p>
+<h3 id="_19">我可以在另一个任务完成后运行一个任务吗？<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：是的，你可以在任务内部安全地启动另一个任务。</p>
+<p>一个常见的模式是为任务添加回调：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery.utils.log</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_task_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_task_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">ignore_result</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">log_result</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;log_result got: </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+</code></pre></div>
+<p>调用：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">|</span> <span class="n">log_result</span><span class="o">.</span><span class="n">s</span><span class="p">())</span><span class="o">.</span><span class="n">delay</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="_20">我可以取消任务的执行吗？<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：是的，使用 <code>result.revoke()</code>：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">countdown</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">revoke</span><span class="p">()</span>
+</code></pre></div>
+<p>或者如果你只有任务 id：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">proj.celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">revoke</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span>
+</code></pre></div>
+<p>后者还支持传递任务 id 列表作为参数。</p>
+<h3 id="worker_2">为什么我的远程控制命令没有被所有 worker 接收？<a class="headerlink" href="#worker_2" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：为了接收广播远程控制命令，每个 worker 节点都会基于 worker 的节点名创建一个唯一的队列名称。</p>
+<p>如果你有多个具有相同主机名的 worker，控制命令将在它们之间以轮询方式接收。</p>
+<p>要解决这个问题，你可以使用 <code>celery worker -n</code> 参数为每个 worker 显式设置节点名：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj worker -n worker1@%h</span>
+<span class="go">celery -A proj worker -n worker2@%h</span>
+</code></pre></div>
+<p>其中 <code>%h</code> 扩展为当前主机名。</p>
+<h3 id="_21">我可以将某些任务仅发送到某些服务器吗？<a class="headerlink" href="#_21" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：是的，你可以使用不同的消息路由拓扑将任务路由到一个或多个 worker，并且一个 worker 实例可以绑定到多个队列。</p>
+<p>更多信息请参阅 <a href="../user-guide/routing/">路由指南</a>。</p>
+<h3 id="_22">我可以禁用任务的预取吗？<a class="headerlink" href="#_22" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：也许可以！AMQP 术语 "prefetch" 令人困惑，因为它仅用于描述任务预取<em>限制</em>。实际上并没有涉及真正的预取。</p>
+<p>禁用预取限制是可能的，但这意味着 worker 将尽可能快地消耗尽可能多的任务。</p>
+<p>你可以使用 <code>celery worker --disable-prefetch</code> 标志（或将 <code>worker_disable_prefetch</code> 设置为 <code>True</code>），以便 worker 仅在其某个进程空闲时才获取任务。此功能目前仅在使用 Redis 作为代理时受支持。</p>
+<h3 id="_23">我可以在运行时更改周期性任务的间隔吗？<a class="headerlink" href="#_23" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：是的，你可以使用 Django 数据库调度器，或者你可以创建一个新的调度子类并重写 <code>celery.schedules.schedule.is_due</code>：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery.schedules</span><span class="w"> </span><span class="kn">import</span> <span class="n">schedule</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">my_schedule</span><span class="p">(</span><span class="n">schedule</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_due</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">last_run_at</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">run_now</span><span class="p">,</span> <span class="n">next_time_to_check</span>
+</code></pre></div>
+<h3 id="celery_5">Celery 支持任务优先级吗？<a class="headerlink" href="#celery_5" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：是的，RabbitMQ 自版本 3.5.0 起支持优先级，而 Redis 传输模拟了优先级支持。</p>
+<p>你也可以通过将高优先级任务路由到不同的 worker 来优先处理工作。在现实世界中，这通常比每条消息的优先级效果更好。你可以将此与速率限制和每条消息优先级结合使用，以实现响应式系统。</p>
+<h3 id="retry-acks_lateacks_late-vs-retry">我应该使用 retry 还是 acks_late？{#acks_late-vs-retry}<a class="headerlink" href="#retry-acks_lateacks_late-vs-retry" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：取决于情况。不一定是二选一，你可能想要同时使用两者。</p>
+<p><code>Task.retry</code> 用于重试任务，特别是对于可通过 <code>try</code> 块捕获的预期错误。AMQP 事务不用于这些错误：<strong>如果任务引发异常，它仍然会被确认！</strong></p>
+<p>当 worker（由于某种原因）在执行过程中崩溃时，如果需要再次执行任务，将使用 <code>acks_late</code> 设置。重要的是要注意，worker 不会已知崩溃，如果确实崩溃，通常是一个需要人工干预的不可恢复错误（worker 或任务代码中的错误）。</p>
+<p>在理想世界中，你可以安全地重试任何失败的任务，但这种情况很少见。想象以下任务：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_upload</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">tmpfile</span><span class="p">):</span>
+    <span class="c1"># 增加存储在数据库中的文件计数</span>
+    <span class="n">increment_file_counter</span><span class="p">()</span>
+    <span class="n">add_file_metadata_to_db</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">tmpfile</span><span class="p">)</span>
+    <span class="n">copy_file_to_destination</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">tmpfile</span><span class="p">)</span>
+</code></pre></div>
+<p>如果这在将文件复制到目的地的过程中崩溃，世界将包含不完整的状态。当然，这不是一个关键场景，但你可能会想象更糟糕的情况。因此，为了编程的简便性，我们降低了可靠性；这是一个好的默认设置，需要此功能并知道自己在做什么的用户仍然可以启用 acks_late（并且将来希望使用手动确认）。</p>
+<p>此外，<code>Task.retry</code> 具有 AMQP 事务不可用的功能：重试之间的延迟、最大重试次数等。</p>
+<p>因此，对于 Python 错误使用 retry，如果你的任务是幂等的，并且需要这种可靠性级别，则结合使用 <code>acks_late</code>。</p>
+<h3 id="_24">我可以安排任务在特定时间执行吗？<a class="headerlink" href="#_24" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：是的。你可以使用 <code>Task.apply_async</code> 的 <code>eta</code> 参数。请注意，不建议使用遥远的 <code>eta</code> 时间。</p>
+<h3 id="worker_3">我可以安全地关闭 worker 吗？<a class="headerlink" href="#worker_3" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：是的，使用 <code>TERM</code> 信号。</p>
+<p>这将告诉 worker 完成所有当前正在执行的作业并尽快关闭。只要关闭完成，即使是实验性传输也不应丢失任何任务。</p>
+<p>你永远不应该使用 <code>KILL</code> 信号（<code>kill -9</code>）停止 <code>celery.bin.worker</code>，除非你已经尝试了几次 <code>TERM</code> 并等待了几分钟让它有机会关闭。</p>
+<p>还要确保只杀死主 worker 进程，而不是它的任何子进程。如果你知道进程当前正在执行 worker 关闭所依赖的任务，你可以将 kill 信号定向到特定的子进程，但这意味着将为任务设置 <code>WorkerLostError</code> 状态，因此任务不会再次运行。</p>
+<p>如果你安装了 <code>setproctitle</code> 模块，识别进程类型会更容易：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">pip install setproctitle</span>
+</code></pre></div>
+<p>安装此库后，你将能够在 <code>ps</code> 列表中看到进程类型，但必须重新启动 worker 才能生效。</p>
+<h3 id="platform-worker">我可以在 [platform] 的后台运行 worker 吗？<a class="headerlink" href="#platform-worker" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：是的。</p>
+<h2 id="django">Django<a class="headerlink" href="#django" title="Permanent link">&para;</a></h2>
+<h3 id="django-celery-beat"><code>django-celery-beat</code> 创建的数据库表有什么用途？<a class="headerlink" href="#django-celery-beat" title="Permanent link">&para;</a></h3>
+<p>当使用基于数据库的调度时，周期性任务的调度信息取自 <code>PeriodicTask</code> 模型，还有几个其他辅助表（<code>IntervalSchedule</code>、<code>CrontabSchedule</code>、<code>PeriodicTasks</code>）。</p>
+<h3 id="django-celery-results"><code>django-celery-results</code> 创建的数据库表有什么用途？<a class="headerlink" href="#django-celery-results" title="Permanent link">&para;</a></h3>
+<p>Django 数据库结果后端扩展需要
+两个额外的模型：<code>TaskResult</code> 和 <code>GroupResult</code>。</p>
+<h2 id="windows">Windows<a class="headerlink" href="#windows" title="Permanent link">&para;</a></h2>
+<h3 id="celery-windows">Celery 是否支持 Windows？<a class="headerlink" href="#celery-windows" title="Permanent link">&para;</a></h3>
+<p><strong>回答</strong>：不支持。</p>
+<p>自 Celery 4.x 起，由于资源不足，不再支持 Windows。</p>
+<p>但它可能仍然有效，我们很乐意接受补丁。</p>
+
+  
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+  
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+        
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../django/" class="md-footer__link md-footer__link--prev" aria-label="上一页: Django">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                Django
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      译者 <a href="https://github.com/oaixnah" target="_blank">oaixnah</a>
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["content.code.annotate","content.code.copy","content.tabs.link","navigation.instant","navigation.instant.prefetch","navigation.instant.progress","navigation.indexes","navigation.top","navigation.footer","navigation.tabs","navigation.expand","navigation.tracking","search.suggest","search.highlight","search.share","toc.follow"],"search":"../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"已复制","clipboard.copy":"复制","search.result.more.one":"在该页上还有 1 个符合条件的结果","search.result.more.other":"在该页上还有 # 个符合条件的结果","search.result.none":"没有找到符合条件的结果","search.result.one":"找到 1 个符合条件的结果","search.result.other":"# 个符合条件的结果","search.result.placeholder":"键入以开始搜索","search.result.term.missing":"缺少","select.version":"选择当前版本"},"version":null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.00c35305.min.js"></script>
+      
+    
+  </body>
+</html>

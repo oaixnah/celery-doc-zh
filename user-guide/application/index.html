@@ -1,0 +1,2300 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Celery应用程序指南：详细讲解Celery应用程序的创建、配置管理、任务注册、主模块命名、配置加载方法（config_from_object、config_from_envvar）、惰性实例化机制、应用程序链最佳实践以及抽象任务和自定义任务类的实现。">
+      
+      
+        <meta name="author" content="oaixnah">
+      
+      
+        <link rel="canonical" href="https://celery.oaix.tech/user-guide/application/">
+      
+      
+        <link rel="prev" href="../../getting-started/next-steps/">
+      
+      
+        <link rel="next" href="../tasks/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.ico">
+      <meta name="generator" content="zensical-0.0.15">
+    
+    
+      
+        <title>应用程序 - Celery 中文文档</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.f1b6466b.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+  
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+  
+  <style>:root{}</style>
+
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="Celery 中文文档" class="md-header__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+      
+  <img src="../../assets/celery_128.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Celery 中文文档
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              应用程序
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="查找">
+  <button type="button" class="md-search__button">
+    查找
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/celery/celery" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    celery/celery
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/introduction/" class="md-tabs__link">
+          
+  
+  快速入门
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  用户指南
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../django/" class="md-tabs__link">
+        
+  
+  Django
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../faq/" class="md-tabs__link">
+        
+  
+  QA
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Celery 中文文档" class="md-nav__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+      
+  <img src="../../assets/celery_128.png" alt="logo">
+
+    </a>
+    Celery 中文文档
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/celery/celery" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    celery/celery
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速入门
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    快速入门
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    介绍
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/backends-and-brokers/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后端与代理
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    后端与代理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/redis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/rabbitmq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RabbitMQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/sqs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SQS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/kafka/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kafka
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/gcpubsub/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Google Pub/Sub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/first-steps-with-celery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速上手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后续步骤
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    用户指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    用户指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    应用程序
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    应用程序
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#main-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        主名称（Main Name）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        配置（Configuration）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="配置（Configuration）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#config_from_object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        config_from_object
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="config_from_object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例 1：使用模块名称
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例 2：传递实际的模块对象
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例 3：使用配置类/对象
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#config_from_envvar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        config_from_envvar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        审查配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#laziness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        惰性（Laziness）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#breaking-the-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        打破链（Breaking the chain）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#abstract-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        抽象任务（Abstract Tasks）
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../calling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../canvas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    画布
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工作进程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../daemonizing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    守护进程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../periodic-tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    周期性任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../routing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    路由任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    监控与管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安全
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../optimizing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_13" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../concurrency/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    并发
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_13" id="__nav_3_13_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    并发
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concurrency/eventlet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eventlet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concurrency/gevent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gevent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../signals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    信号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extending/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    扩展
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    配置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../django/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Django
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#main-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        主名称（Main Name）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        配置（Configuration）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="配置（Configuration）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#config_from_object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        config_from_object
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="config_from_object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例 1：使用模块名称
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例 2：传递实际的模块对象
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例 3：使用配置类/对象
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#config_from_envvar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        config_from_envvar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        审查配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#laziness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        惰性（Laziness）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#breaking-the-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        打破链（Breaking the chain）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#abstract-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        抽象任务（Abstract Tasks）
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+  
+
+
+<h1 id="_1">应用程序<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>Celery 在使用前必须被实例化，这个实例被称为应用程序（或简称为 <em>app</em>）。</p>
+<p>应用程序是线程安全的，因此具有不同配置、组件和任务的多个 Celery 应用程序可以在同一个进程空间中共存。</p>
+<p>现在让我们创建一个：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Celery</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span> <span class="o">=</span> <span class="n">Celery</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span>
+<span class="go">&lt;Celery __main__:0x100469fd0&gt;</span>
+</code></pre></div>
+<p>最后一行显示了应用程序的文本表示：包括应用程序类的名称（<code>Celery</code>）、当前主模块的名称（<code>__main__</code>）和对象的内存地址（<code>0x100469fd0</code>）。</p>
+<h2 id="main-name">主名称（Main Name）<a class="headerlink" href="#main-name" title="Permanent link">&para;</a></h2>
+<p>这些中只有一个是重要的，那就是主模块名称。让我们看看为什么是这样。</p>
+<p>当你在 Celery 中发送任务消息时，该消息不会包含任何源代码，只包含你想要执行的任务的名称。这类似于互联网上主机名的工作方式：每个工作器维护一个任务名称到其实际函数的映射，称为 <em>任务注册表</em>。</p>
+<p>每当你定义一个任务时，该任务也会被添加到本地注册表中：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span>
+<span class="go">&lt;@task: __main__.add&gt;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">name</span>
+<span class="go">__main__.add</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="s1">&#39;__main__.add&#39;</span><span class="p">]</span>
+<span class="go">&lt;@task: __main__.add&gt;</span>
+</code></pre></div>
+<p>在那里你又看到了 <code>__main__</code>；每当 Celery 无法检测到函数属于哪个模块时，它会使用主模块名称来生成任务名称的开头。</p>
+<p>这仅在有限的用例中是个问题：</p>
+<ol>
+<li>如果定义任务的模块作为程序运行。</li>
+<li>如果应用程序是在 Python shell（REPL）中创建的。</li>
+</ol>
+<p>例如这里，任务模块也用于使用 <code>app.worker_main()</code> 启动工作器：</p>
+<div class="language-python highlight"><span class="filename">tasks.py</span><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Celery</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">Celery</span><span class="p">()</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span> <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;worker&#39;</span><span class="p">,</span> <span class="s1">&#39;--loglevel=INFO&#39;</span><span class="p">]</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">worker_main</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+</code></pre></div>
+<p>当这个模块被执行时，任务将以 <code>__main__</code> 开头命名，但当模块被另一个进程导入时，比如调用任务，任务将以 <code>tasks</code>（模块的真实名称）开头命名：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">add</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">name</span>
+<span class="go">tasks.add</span>
+</code></pre></div>
+<p>你可以为 main 模块指定另一个名称：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span> <span class="o">=</span> <span class="n">Celery</span><span class="p">(</span><span class="s1">&#39;tasks&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">main</span>
+<span class="go">&#39;tasks&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">name</span>
+<span class="go">tasks.add</span>
+</code></pre></div>
+<div class="admonition quote">
+<p class="admonition-title"><a href="../tasks/#task-names" target="_blank">任务指南 - 名称</a></p>
+</div>
+<h2 id="configuration">配置（Configuration）<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
+<p>你可以设置几个选项来改变 Celery 的工作方式。这些选项可以直接在应用程序实例上设置，或者你可以使用专用的配置模块。</p>
+<p>配置可作为 <code>app.conf</code> 使用：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">timezone</span>
+<span class="go">&#39;Europe/London&#39;</span>
+</code></pre></div>
+<p>你也可以直接设置配置值：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">enable_utc</span> <span class="o">=</span> <span class="kc">True</span>
+</code></pre></div>
+<p>或者使用 <code>update()</code> 方法一次更新多个键：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">enable_utc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">timezone</span><span class="o">=</span><span class="s1">&#39;Europe/London&#39;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</code></pre></div>
+<p>配置对象由多个按顺序查询的字典组成：</p>
+<ol>
+<li>运行时进行的更改。</li>
+<li>配置模块（如果有）</li>
+<li>默认配置（<code>celery.app.defaults</code>）。</li>
+</ol>
+<p>你甚至可以使用 <code>app.add_defaults()</code> 方法添加新的默认源。</p>
+<div class="admonition quote">
+<p class="admonition-title"><a href="../configuration/" target="_blank">完整配置参考：查看所有可用设置及其默认值的完整列表。</a></p>
+</div>
+<h3 id="config_from_object"><code>config_from_object</code><a class="headerlink" href="#config_from_object" title="Permanent link">&para;</a></h3>
+<p><code>app.config_from_object()</code> 方法从配置对象加载配置。</p>
+<p>这可以是一个配置模块，或者任何具有配置属性的对象。</p>
+<p>请注意，当调用 <code>app.config_from_object()</code> 时，任何先前设置的配置都将被重置。如果你想设置额外的配置，应该在此之后进行。</p>
+<h4 id="1">示例 1：使用模块名称<a class="headerlink" href="#1" title="Permanent link">&para;</a></h4>
+<p><code>app.config_from_object()</code> 方法可以接受 Python 模块的完全限定名称，甚至是 Python 属性的名称，例如：<code>celeryconfig</code>、<code>myproj.config.celery</code> 或 <code>myproj.config:CeleryConfig</code>：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Celery</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Celery</span><span class="p">()</span>
+<span class="n">app</span><span class="o">.</span><span class="n">config_from_object</span><span class="p">(</span><span class="s1">&#39;celeryconfig&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p><code>celeryconfig</code> 模块可能看起来像这样：</p>
+<div class="language-python highlight"><span class="filename">celeryconfig.py</span><pre><span></span><code><span class="n">enable_utc</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">timezone</span> <span class="o">=</span> <span class="s1">&#39;Europe/London&#39;</span>
+</code></pre></div>
+<p>只要 <code>import celeryconfig</code> 是可能的，应用程序就能够使用它。</p>
+<h4 id="2">示例 2：传递实际的模块对象<a class="headerlink" href="#2" title="Permanent link">&para;</a></h4>
+<p>你也可以传递一个已经导入的模块对象，但这并不总是推荐的。</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>推荐使用模块的名称，因为这意味着在使用 prefork 池时不需要序列化模块。如果你遇到配置问题或 pickle 错误，请尝试使用模块名称代替。</p>
+</div>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">celeryconfig</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Celery</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Celery</span><span class="p">()</span>
+<span class="n">app</span><span class="o">.</span><span class="n">config_from_object</span><span class="p">(</span><span class="n">celeryconfig</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="3">示例 3：使用配置类/对象<a class="headerlink" href="#3" title="Permanent link">&para;</a></h4>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Celery</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Celery</span><span class="p">()</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Config</span><span class="p">:</span>
+    <span class="n">enable_utc</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">timezone</span> <span class="o">=</span> <span class="s1">&#39;Europe/London&#39;</span>
+
+<span class="n">app</span><span class="o">.</span><span class="n">config_from_object</span><span class="p">(</span><span class="n">Config</span><span class="p">)</span>
+<span class="c1"># 或者使用对象的完全限定名称：</span>
+<span class="c1">#   app.config_from_object(&#39;module:Config&#39;)</span>
+</code></pre></div>
+<h3 id="config_from_envvar"><code>config_from_envvar</code><a class="headerlink" href="#config_from_envvar" title="Permanent link">&para;</a></h3>
+<p><code>app.config_from_envvar()</code> 方法从环境变量中获取配置模块名称</p>
+<p>例如——要从名为 <code>CELERY_CONFIG_MODULE</code> 的环境变量指定的模块加载配置：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Celery</span>
+
+<span class="c1">#: 设置默认配置模块名称</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;CELERY_CONFIG_MODULE&#39;</span><span class="p">,</span> <span class="s1">&#39;celeryconfig&#39;</span><span class="p">)</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Celery</span><span class="p">()</span>
+<span class="n">app</span><span class="o">.</span><span class="n">config_from_envvar</span><span class="p">(</span><span class="s1">&#39;CELERY_CONFIG_MODULE&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>然后你可以通过环境指定要使用的配置模块：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">CELERY_CONFIG_MODULE=&quot;celeryconfig.prod&quot; celery worker -l INFO</span>
+</code></pre></div>
+<h3 id="_2">审查配置<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<p>如果你想要打印出配置作为调试信息或类似用途，你可能还想过滤掉敏感信息，如密码和 API 密钥。</p>
+<p>Celery 附带了一些用于呈现配置的有用工具，其中之一是 <code>humanize()</code>：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">humanize</span><span class="p">(</span><span class="n">with_defaults</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">censored</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+<p>此方法将配置作为表格字符串返回。默认情况下，这仅包含对配置的更改，但你可以通过启用 <code>with_defaults</code> 参数来包含内置的默认键和值。</p>
+<p>如果你希望将配置作为字典处理，可以使用 <code>table()</code> 方法：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">with_defaults</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">censored</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+<p>请注意，Celery 无法删除所有敏感信息，因为它仅使用正则表达式搜索常用命名的键。如果你添加包含敏感信息的自定义设置，应该使用 Celery 识别为机密的名称来命名键。</p>
+<p>如果配置设置的名称包含以下任何子字符串，将被审查：</p>
+<p><code>API</code>, <code>TOKEN</code>, <code>KEY</code>, <code>SECRET</code>, <code>PASS</code>, <code>SIGNATURE</code>, <code>DATABASE</code></p>
+<h2 id="laziness">惰性（Laziness）<a class="headerlink" href="#laziness" title="Permanent link">&para;</a></h2>
+<p>应用程序实例是惰性的，意味着它只有在实际需要时才会被求值。</p>
+<p>创建 <code>Celery</code> 实例只会执行以下操作：</p>
+<ol>
+<li>创建一个逻辑时钟实例，用于事件。</li>
+<li>创建任务注册表。</li>
+<li>将自己设置为当前应用程序（但如果 <code>set_as_current</code> 参数被禁用则不会）</li>
+<li>调用 <code>app.on_init()</code> 回调（默认情况下不执行任何操作）。</li>
+</ol>
+<p><code>app.task()</code> 装饰器不会在定义任务时创建任务，而是将任务的创建推迟到任务被使用时，或者在应用程序被<em>最终化</em>之后。</p>
+<p>这个例子展示了任务直到你使用任务或访问属性（在这种情况下是 <code>__repr__</code>）时才会被创建：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">add</span><span class="p">)</span>
+<span class="go">&lt;class &#39;celery.local.PromiseProxy&#39;&gt;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">__evaluated__</span><span class="p">()</span>
+<span class="go">False</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span>        <span class="c1"># &lt;-- 导致 repr(add) 发生</span>
+<span class="go">&lt;@task: __main__.add&gt;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">__evaluated__</span><span class="p">()</span>
+<span class="go">True</span>
+</code></pre></div>
+<p>应用程序的 <em>最终化</em> 可以通过显式调用 <code>app.finalize()</code> 发生，或者通过隐式访问 <code>app.tasks</code> 属性发生。</p>
+<p>最终化对象将：</p>
+<ol>
+<li>复制必须在应用程序之间共享的任务默认情况下任务是被共享的，但如果任务装饰器的 <code>shared</code> 参数被禁用，那么任务将对其绑定的应用程序私有。</li>
+<li>评估所有挂起的任务装饰器。</li>
+<li>
+<p>确保所有任务都绑定到当前应用程序。</p>
+<p>任务绑定到应用程序，以便它们可以从配置中读取默认值。</p>
+</li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">"默认应用程序"</p>
+<p>Celery 并不总是有应用程序，过去只有基于模块的 API。在 Celery 5.0 发布之前，旧位置提供了兼容性 API，但已被移除。</p>
+<p>Celery 总是创建一个特殊的应用程序 - "默认应用程序"，如果没有实例化自定义应用程序，就会使用这个应用程序。</p>
+<p><code>celery.task</code> 模块不再可用。使用应用程序实例上的方法，而不是基于模块的 API：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery.task</span><span class="w"> </span><span class="kn">import</span> <span class="n">Task</span>   <span class="c1"># &lt;&lt; 旧的 Task 基类</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Task</span>        <span class="c1"># &lt;&lt; 新的基类</span>
+</code></pre></div>
+</div>
+<h2 id="breaking-the-chain">打破链（Breaking the chain）<a class="headerlink" href="#breaking-the-chain" title="Permanent link">&para;</a></h2>
+<p>虽然可以依赖当前设置的应用程序，但最佳实践是始终将应用程序实例传递给任何需要它的地方。</p>
+<p>我称之为"应用程序链（app chain）"，因为它创建了一个依赖于传递的应用程序的实例链。</p>
+<p>以下示例被认为是糟糕的做法：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">current_app</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Scheduler</span><span class="p">:</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">app</span> <span class="o">=</span> <span class="n">current_app</span>
+</code></pre></div>
+<p>相反，它应该将 <code>app</code> 作为参数：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Scheduler</span><span class="p">:</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span>
+</code></pre></div>
+<p>在内部，Celery 使用 <code>celery.app.app_or_default()</code> 函数，以便所有内容也能在基于模块的兼容性 API 中工作</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery.app</span><span class="w"> </span><span class="kn">import</span> <span class="n">app_or_default</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Scheduler</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app_or_default</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+</code></pre></div>
+<p>在开发中，你可以设置 <code>CELERY_TRACE_APP</code> 环境变量，以便在应用程序链断开时引发异常：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">CELERY_TRACE_APP=1 celery worker -l INFO</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">API 的演进</p>
+<p>Celery 自 2009 年最初创建以来已经发生了很大变化。</p>
+<p>例如，在开始时，可以使用任何可调用对象作为任务：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="go">def hello(to):</span>
+<span class="go">    return &#39;hello {0}&#39;.format(to)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">celery.execute</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_async</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">apply_async</span><span class="p">(</span><span class="n">hello</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;world!&#39;</span><span class="p">,))</span>
+</code></pre></div>
+<p>或者你也可以创建一个 <code>Task</code> 类来设置某些选项，或覆盖其他行为</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Task</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">celery.registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">tasks</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Hello</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
+    <span class="n">queue</span> <span class="o">=</span> <span class="s1">&#39;hipri&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">to</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;hello </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">to</span><span class="p">)</span>
+<span class="n">tasks</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Hello</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">Hello</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="s1">&#39;world!&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>后来，人们认为传递任意可调用对象是一种反模式，因为它使得使用除 pickle 之外的其他序列化器变得非常困难，该功能在 2.0 版本中被移除，被任务装饰器取代：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s1">&#39;hipri&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">hello</span><span class="p">(</span><span class="n">to</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s1">&#39;hello </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">to</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<h2 id="abstract-tasks">抽象任务（Abstract Tasks）<a class="headerlink" href="#abstract-tasks" title="Permanent link">&para;</a></h2>
+<p>所有使用 <code>app.task()</code> 装饰器创建的任务都将继承应用程序的基础 <code>Task</code> 类。</p>
+<p>你可以使用 <code>base</code> 参数指定不同的基类：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="n">OtherTask</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+</code></pre></div>
+<p>要创建自定义任务类，你应该继承中性基类：<code>celery.Task</code>。</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Task</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DebugTask</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;TASK STARTING: </span><span class="si">{0.name}</span><span class="s1">[</span><span class="si">{0.request.id}</span><span class="s1">]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>如果你重写了任务的 <code>__call__</code> 方法，那么非常重要的一点是你也要调用 <code>self.run</code> 来执行任务的主体。不要调用 <code>super().__call__</code>。中性基类 <code>celery.Task</code> 的 <code>__call__</code> 方法仅用于参考。为了优化，这已经被展开到 <code>celery.app.trace.build_tracer.trace_task</code> 中，如果没有定义 <code>__call__</code> 方法，它会直接在自定义任务类上调用 <code>run</code>。</p>
+</div>
+<p>中性基类是特殊的，因为它还没有绑定到任何特定的应用程序。一旦任务绑定到应用程序，它将读取配置来设置默认值，等等。</p>
+<p>要实现一个基类，你需要使用 <code>app.task()</code> 装饰器创建一个任务：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="n">DebugTask</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+</code></pre></div>
+<p>甚至可以通过更改应用程序的 <code>app.Task()</code> 属性来更改应用程序的默认基类：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Celery</span><span class="p">,</span> <span class="n">Task</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span> <span class="o">=</span> <span class="n">Celery</span><span class="p">()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyBaseTask</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="n">queue</span> <span class="o">=</span> <span class="s1">&#39;hipri&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">Task</span> <span class="o">=</span> <span class="n">MyBaseTask</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">Task</span>
+<span class="go">&lt;unbound MyBaseTask&gt;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span>
+<span class="go">&lt;@task: __main__.add&gt;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">mro</span><span class="p">()</span>
+<span class="go">[&lt;class add of &lt;Celery __main__:0x1012b4410&gt;&gt;,</span>
+<span class="go"> &lt;unbound MyBaseTask&gt;,</span>
+<span class="go"> &lt;unbound Task&gt;,</span>
+<span class="go"> &lt;type &#39;object&#39;&gt;]</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../../getting-started/next-steps/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 后续步骤">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                后续步骤
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../tasks/" class="md-footer__link md-footer__link--next" aria-label="下一页: 任务">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                任务
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      译者 <a href="https://github.com/oaixnah" target="_blank">oaixnah</a>
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.tabs.link","navigation.instant","navigation.instant.prefetch","navigation.instant.progress","navigation.indexes","navigation.top","navigation.footer","navigation.tabs","navigation.expand","navigation.tracking","search.suggest","search.highlight","search.share","toc.follow"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"已复制","clipboard.copy":"复制","search.result.more.one":"在该页上还有 1 个符合条件的结果","search.result.more.other":"在该页上还有 # 个符合条件的结果","search.result.none":"没有找到符合条件的结果","search.result.one":"找到 1 个符合条件的结果","search.result.other":"# 个符合条件的结果","search.result.placeholder":"键入以开始搜索","search.result.term.missing":"缺少","select.version":"选择当前版本"},"version":null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.00c35305.min.js"></script>
+      
+    
+  </body>
+</html>

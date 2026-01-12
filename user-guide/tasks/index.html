@@ -1,0 +1,4922 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Celery任务系统完整指南 - 学习如何创建、配置和管理Celery任务，包括任务装饰器使用、绑定任务、任务继承、重试机制、日志记录、参数检查等核心功能。涵盖任务命名、请求上下文、敏感信息处理以及最佳实践，帮助开发者构建可靠高效的分布式任务队列系统。">
+      
+      
+        <meta name="author" content="oaixnah">
+      
+      
+        <link rel="canonical" href="https://celery.oaix.tech/user-guide/tasks/">
+      
+      
+        <link rel="prev" href="../application/">
+      
+      
+        <link rel="next" href="../calling/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.ico">
+      <meta name="generator" content="zensical-0.0.15">
+    
+    
+      
+        <title>任务 - Celery 中文文档</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.f1b6466b.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+  
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+  
+  <style>:root{}</style>
+
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="Celery 中文文档" class="md-header__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+      
+  <img src="../../assets/celery_128.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Celery 中文文档
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              任务
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="查找">
+  <button type="button" class="md-search__button">
+    查找
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/celery/celery" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    celery/celery
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/introduction/" class="md-tabs__link">
+          
+  
+  快速入门
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../application/" class="md-tabs__link">
+          
+  
+  用户指南
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../django/" class="md-tabs__link">
+        
+  
+  Django
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../faq/" class="md-tabs__link">
+        
+  
+  QA
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Celery 中文文档" class="md-nav__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+      
+  <img src="../../assets/celery_128.png" alt="logo">
+
+    </a>
+    Celery 中文文档
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/celery/celery" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    celery/celery
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速入门
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    快速入门
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    介绍
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/backends-and-brokers/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后端与代理
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    后端与代理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/redis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/rabbitmq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RabbitMQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/sqs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SQS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/kafka/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kafka
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/gcpubsub/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Google Pub/Sub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/first-steps-with-celery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速上手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后续步骤
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    用户指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    用户指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../application/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    应用程序
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    任务
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        基础
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="基础">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        如何导入任务装饰器？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        多个装饰器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        绑定任务
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        任务继承
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        名称
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="名称">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        更改自动命名行为
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        请求
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="请求">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        日志记录
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="日志记录">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        参数检查
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        隐藏参数中的敏感信息
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        重试
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="重试">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        使用自定义重试延迟
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        对已知异常进行自动重试
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pydantic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        使用 Pydantic 进行参数验证
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="使用 Pydantic 进行参数验证">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        联合类型，泛型参数
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        可选参数/返回值
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        返回值处理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydantic_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pydantic 参数
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        选项列表
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="选项列表">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        通用选项
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        状态
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="状态">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        结果后端
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="结果后端">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rpc-rabbitmqqpid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RPC 结果后端 (RabbitMQ/QPid)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数据库结果后端
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        内置状态
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="内置状态">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pending" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PENDING
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        STARTED
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#success" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SUCCESS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FAILURE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RETRY
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#revoked" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        REVOKED
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        自定义状态
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        创建可序列化的异常
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        半谓词
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="半谓词">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ignore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ignore
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reject" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reject
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retry_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retry
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        自定义任务类
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="自定义任务类">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实例化
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="实例化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        每个任务使用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        应用程序范围使用
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        处理器
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="处理器">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_30" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        执行时间线
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        可用的处理器
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例用法
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        请求和自定义请求
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_34" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        工作原理
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_35" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        提示和最佳实践
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="提示和最佳实践">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_36" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        忽略不需要的结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_37" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        更多优化提示
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_38" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        避免启动同步子任务
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_39" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        性能和策略
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="性能和策略">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_40" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        粒度
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数据局部性
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        状态
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数据库事务
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="数据库事务">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#celery-54" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        对于Celery &lt;5.4
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_44" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="示例">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#blogmodelspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        blog/models.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blogviewspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        blog/views.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blogtaskspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        blog/tasks.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../calling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../canvas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    画布
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工作进程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../daemonizing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    守护进程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../periodic-tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    周期性任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../routing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    路由任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    监控与管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安全
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../optimizing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_13" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../concurrency/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    并发
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_13" id="__nav_3_13_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    并发
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concurrency/eventlet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eventlet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concurrency/gevent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gevent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../signals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    信号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extending/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    扩展
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    配置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../django/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Django
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        基础
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="基础">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        如何导入任务装饰器？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        多个装饰器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        绑定任务
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        任务继承
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        名称
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="名称">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        更改自动命名行为
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        请求
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="请求">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        日志记录
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="日志记录">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        参数检查
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        隐藏参数中的敏感信息
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        重试
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="重试">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        使用自定义重试延迟
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        对已知异常进行自动重试
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pydantic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        使用 Pydantic 进行参数验证
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="使用 Pydantic 进行参数验证">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        联合类型，泛型参数
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        可选参数/返回值
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        返回值处理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydantic_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pydantic 参数
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        选项列表
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="选项列表">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        通用选项
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        状态
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="状态">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        结果后端
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="结果后端">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rpc-rabbitmqqpid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RPC 结果后端 (RabbitMQ/QPid)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数据库结果后端
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        内置状态
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="内置状态">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pending" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PENDING
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        STARTED
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#success" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SUCCESS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FAILURE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RETRY
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#revoked" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        REVOKED
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        自定义状态
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        创建可序列化的异常
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        半谓词
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="半谓词">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ignore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ignore
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reject" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reject
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retry_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retry
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        自定义任务类
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="自定义任务类">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实例化
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="实例化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        每个任务使用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        应用程序范围使用
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        处理器
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="处理器">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_30" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        执行时间线
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        可用的处理器
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例用法
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        请求和自定义请求
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_34" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        工作原理
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_35" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        提示和最佳实践
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="提示和最佳实践">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_36" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        忽略不需要的结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_37" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        更多优化提示
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_38" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        避免启动同步子任务
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_39" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        性能和策略
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="性能和策略">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_40" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        粒度
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数据局部性
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        状态
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数据库事务
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="数据库事务">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#celery-54" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        对于Celery &lt;5.4
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_44" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="示例">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#blogmodelspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        blog/models.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blogviewspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        blog/views.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blogtaskspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        blog/tasks.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+  
+
+
+<h1 id="_1">任务<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>任务是 Celery 应用程序的构建块。</p>
+<p>任务是一个可以从任何可调用对象创建的类。它扮演双重角色，既定义了任务被调用时会发生什么（发送消息），也定义了工作进程接收到该消息时会发生什么。</p>
+<p>每个任务类都有一个唯一的名称，这个名称在消息中被引用，以便工作进程可以找到正确的函数来执行。</p>
+<p>任务消息在被工作进程 <code>确认</code> 之前不会从队列中移除。工作进程可以提前保留许多消息，即使工作进程被杀死——由于电源故障或其他原因——消息也会被重新传递给另一个工作进程。</p>
+<p>理想情况下，任务函数应该是 <code>幂等</code> 的：意味着即使使用相同的参数多次调用该函数，也不会导致意外的副作用。由于工作进程无法检测您的任务是否幂等，默认行为是在执行之前提前确认消息，这样已经启动的任务调用永远不会再次执行。</p>
+<p>如果您的任务是幂等的，您可以设置 <code>acks_late</code> 选项，让工作进程在任务返回 <em>之后</em> 确认消息。另请参阅常见问题解答条目 <a href="../../faq/#acks_late-vs-retry">我应该使用 retry 还是 acks_late？</a>。</p>
+<p>请注意，即使启用了 <code>acks_late</code>，如果执行任务的子进程被终止（无论是由于任务调用 <code>sys.exit()</code> 还是信号），工作进程也会确认消息。这种行为是有意为之的，因为...</p>
+<ol>
+<li>我们不想重新运行那些迫使内核向进程发送 <code>SIGSEGV</code>（段错误）或类似信号的任务。</li>
+<li>我们假设系统管理员故意杀死任务时，不希望它自动重启。</li>
+<li>分配过多内存的任务有触发内核 OOM killer 的危险，同样的情况可能会再次发生。</li>
+<li>重新传递时总是失败的任务可能会导致高频消息循环，从而拖垮系统。</li>
+</ol>
+<p>如果您确实希望在这些情况下重新传递任务，您应该考虑启用 <code>task_reject_on_worker_lost</code> 设置。</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>无限期阻塞的任务最终可能会阻止工作进程实例执行任何其他工作。</p>
+<p>如果您的任务执行 I/O 操作，请确保为这些操作添加超时，例如使用 <code>requests</code> 库为 Web 请求添加超时：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">connect_timeout</span><span class="p">,</span> <span class="n">read_timeout</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">30.0</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">URL</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="p">(</span><span class="n">connect_timeout</span><span class="p">,</span> <span class="n">read_timeout</span><span class="p">))</span>
+</code></pre></div>
+<p><a href="../../user-guide/workers/#time-limits" target="_blank">工作进程指南 - 时间限制</a> 对于确保所有任务及时返回很方便，但时间限制事件实际上会强制杀死进程，因此仅在没有使用手动超时的情况下使用它们来检测问题。</p>
+<p>在以前的版本中，默认的 prefork 池调度器对长时间运行的任务不友好，因此如果您有运行几分钟/小时的任务，建议启用 <code>-Ofair &lt;celery worker -O&gt;</code> 命令行参数给 <code>celery worker</code>。然而，从版本 4.0 开始，-Ofair 现在是默认的调度策略。有关更多信息，请参阅 <a href="../optimizing/#optimizing-prefetch-limit" target="_blank">优化指南 - 预取限制</a>，为了获得最佳性能，请将长时间运行和短时间运行的任务路由到专用工作进程 <a href="../routing/#routing-automatic">路由指南 - 自动路由</a>。</p>
+<p>如果您的 worker 挂起，请在提交问题之前调查正在运行的任务，因为挂起很可能是由于一个或多个任务在网络操作上挂起引起的。</p>
+</div>
+<h2 id="_2">基础<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>您可以通过使用 <code>task()</code> 装饰器轻松地从任何可调用对象创建任务：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">User</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_user</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+    <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">)</span>
+</code></pre></div>
+<p>还有许多 <a href="#task-options">选项</a> 可以为任务设置，这些可以作为装饰器的参数指定：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">serializer</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_user</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+    <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="_3">如何导入任务装饰器？<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<p>任务装饰器可在您的 <code>Celery()</code> 应用程序实例上使用，如果您不知道这是什么，请阅读 <a href="../../getting-started/first-steps-with-celery/">快速上手</a>。</p>
+<p>如果您正在使用 Django（参见 <a href="../../django/">与 Django 一起使用</a>），或者您是库的作者，那么您可能想要使用 <code>shared_task()</code> 装饰器：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">shared_task</span>
+
+<span class="nd">@shared_task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+</code></pre></div>
+<h3 id="_4">多个装饰器<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>当将多个装饰器与任务装饰器结合使用时，您必须确保 <code>task</code> 装饰器最后应用（奇怪的是，在 Python 中这意味着它必须在列表的最前面）：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="nd">@decorator2</span>
+<span class="nd">@decorator1</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+</code></pre></div>
+<h3 id="_5">绑定任务<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p>任务被绑定意味着任务的第一个参数将始终是任务实例（<code>self</code>），就像 Python 的绑定方法一样：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n">get_task_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+</code></pre></div>
+<p>绑定任务对于重试（使用 <code>Task.retry()</code>）、访问当前任务请求的信息以及您添加到自定义任务基类的任何附加功能都是必需的。</p>
+<h3 id="_6">任务继承<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<p>任务装饰器的 <code>base</code> 参数指定任务的基类：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">celery</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyTask</span><span class="p">(</span><span class="n">celery</span><span class="o">.</span><span class="n">Task</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_failure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">task_id</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">einfo</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0!r}</span><span class="s1"> failed: </span><span class="si">{1!r}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">task_id</span><span class="p">,</span> <span class="n">exc</span><span class="p">))</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="n">MyTask</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">()</span>
+</code></pre></div>
+<h2 id="task-names">名称<a class="headerlink" href="#task-names" title="Permanent link">&para;</a></h2>
+<p>每个任务都必须具有唯一的名称。</p>
+<p>如果没有提供明确的名称，任务装饰器将为您生成一个名称，该名称将基于：任务定义所在的模块，以及任务函数的名称。</p>
+<p>设置明确名称的示例：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;sum-of-two-numbers&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;sum-of-two-numbers&#39;</span>
+</code></pre></div>
+<p>最佳实践是使用模块名称作为命名空间，这样如果另一个模块中已经定义了同名任务，名称就不会冲突。</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;tasks.add&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+</code></pre></div>
+<p>您可以通过检查任务的 <code>.name</code> 属性来了解任务的名称：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;tasks.add&#39;</span>
+</code></pre></div>
+<p>我们在此指定的名称（<code>tasks.add</code>）与如果任务在名为 <code>tasks.py</code> 的模块中定义时自动生成的名称完全相同：</p>
+<div class="language-python highlight"><span class="filename">tasks.py</span><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+</code></pre></div>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">add</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;tasks.add&#39;</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>您可以在 worker 中使用 <code>inspect</code> 命令查看所有已注册任务的名称。请参阅用户指南的 <a href="../monitoring/#inspect-registered" target="_blank">监控指南</a> 部分中的 <code>inspect registered</code> 命令。</p>
+</div>
+<h3 id="_7">更改自动命名行为<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<p>在某些情况下，默认的自动命名并不合适。考虑在许多不同模块中有许多任务的情况：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">project</span>
+<span class="go">├── __init__.py</span>
+<span class="go">├── celery.py</span>
+<span class="go">├── moduleA</span>
+<span class="go">│   ├── __init__.py</span>
+<span class="go">│   └── tasks.py</span>
+<span class="go">└── moduleB</span>
+<span class="go">    ├── __init__.py</span>
+<span class="go">    └── tasks.py</span>
+</code></pre></div>
+<p>使用默认的自动命名，每个任务将具有类似 <code>moduleA.tasks.taskA</code>、<code>moduleA.tasks.taskB</code>、<code>moduleB.tasks.test</code> 等的生成名称。您可能希望在所有任务名称中去掉 <code>tasks</code>。如上所述，您可以为所有任务明确指定名称，或者可以通过重写 <code>gen_task_name()</code> 来更改自动命名行为。继续上面的示例，<code>celery.py</code> 可能包含：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Celery</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyCelery</span><span class="p">(</span><span class="n">Celery</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">gen_task_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">module</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">module</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.tasks&#39;</span><span class="p">):</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="n">module</span><span class="p">[:</span><span class="o">-</span><span class="mi">6</span><span class="p">]</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">gen_task_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">module</span><span class="p">)</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">MyCelery</span><span class="p">(</span><span class="s1">&#39;main&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>这样每个任务将具有类似 <code>moduleA.taskA</code>、<code>moduleA.taskB</code> 和 <code>moduleB.test</code> 的名称。</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>请确保您的 <code>gen_task_name()</code> 是一个纯函数：意味着对于相同的输入，它必须始终返回相同的输出。</p>
+</div>
+<h2 id="_8">请求<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p><code>Task.request()</code> 包含与当前正在执行的任务相关的信息和状态。</p>
+<p>请求定义了以下属性：</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>执行任务的唯一ID。</td>
+</tr>
+<tr>
+<td>group</td>
+<td>任务的 <a href="../canvas/#canvas-group" target="_blank">画布指南</a> 的唯一ID（如果此任务是成员）。</td>
+</tr>
+<tr>
+<td>chord</td>
+<td>此任务所属的chord的唯一ID（如果任务是header的一部分）。</td>
+</tr>
+<tr>
+<td>correlation_id</td>
+<td>用于去重等用途的自定义ID。</td>
+</tr>
+<tr>
+<td>args</td>
+<td>位置参数。</td>
+</tr>
+<tr>
+<td>kwargs</td>
+<td>关键字参数。</td>
+</tr>
+<tr>
+<td>origin</td>
+<td>发送此任务的主机名。</td>
+</tr>
+<tr>
+<td>retries</td>
+<td>当前任务已重试的次数。从 <code>0</code> 开始的整数。</td>
+</tr>
+<tr>
+<td>is_eager</td>
+<td>如果任务在客户端本地执行而不是由工作进程执行，则设置为 <code>True</code>。</td>
+</tr>
+<tr>
+<td>eta</td>
+<td>任务的原始ETA（如果有）。这是UTC时间（取决于 <code>enable_utc</code> 设置）。</td>
+</tr>
+<tr>
+<td>expires</td>
+<td>任务的原始过期时间（如果有）。这是UTC时间（取决于 <code>enable_utc</code> 设置）。</td>
+</tr>
+<tr>
+<td>hostname</td>
+<td>执行任务的工作进程实例的节点名称。</td>
+</tr>
+<tr>
+<td>delivery_info</td>
+<td>额外的消息传递信息。这是一个包含用于传递此任务的交换机和路由键的映射。例如 <code>Task.retry()</code> 使用它来将任务重新发送到相同的目标队列。此字典中键的可用性取决于所使用的消息代理。</td>
+</tr>
+<tr>
+<td>reply_to</td>
+<td>用于发送回复的队列名称（例如，与RPC结果后端一起使用）。</td>
+</tr>
+<tr>
+<td>called_directly</td>
+<td>如果任务不是由工作进程执行的，则此标志设置为true。</td>
+</tr>
+<tr>
+<td>timelimit</td>
+<td>当前对此任务生效的 <code>(soft, hard)</code> 时间限制元组（如果有）。</td>
+</tr>
+<tr>
+<td>callbacks</td>
+<td>如果此任务成功返回，则要调用的签名列表。</td>
+</tr>
+<tr>
+<td>errbacks</td>
+<td>如果此任务失败，则要调用的签名列表。</td>
+</tr>
+<tr>
+<td>utc</td>
+<td>如果调用者启用了UTC，则设置为true（<code>enable_utc</code>）。</td>
+</tr>
+<tr>
+<td>headers</td>
+<td>与此任务消息一起发送的消息头映射（可能为 <code>None</code>）。</td>
+</tr>
+<tr>
+<td>reply_to</td>
+<td>发送回复的位置（队列名称）。</td>
+</tr>
+<tr>
+<td>correlation_id</td>
+<td>通常与任务ID相同，通常在amqp中用于跟踪回复的用途。</td>
+</tr>
+<tr>
+<td>root_id</td>
+<td>此任务所属工作流中第一个任务的唯一ID（如果有）。</td>
+</tr>
+<tr>
+<td>parent_id</td>
+<td>调用此任务的任务的唯一ID（如果有）。</td>
+</tr>
+<tr>
+<td>chain</td>
+<td>形成链的任务的反向列表（如果有）。此列表中的最后一项将是当前任务之后的下一个任务。如果使用任务协议的版本一，链任务将在 <code>request.callbacks</code> 中。</td>
+</tr>
+<tr>
+<td>properties</td>
+<td>与此任务消息一起接收的消息属性映射（可能为 <code>None</code> 或 <code>{}</code>）</td>
+</tr>
+<tr>
+<td>replaced_task_nesting</td>
+<td>任务被替换的次数（如果有的话）（可能为 <code>0</code>）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_9">示例<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<p>一个访问上下文中信息的示例任务是：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">dump_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Executing task id </span><span class="si">{0.id}</span><span class="s1">, args: </span><span class="si">{0.args!r}</span><span class="s1"> kwargs: </span><span class="si">{0.kwargs!r}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">))</span>
+</code></pre></div>
+<p><code>bind</code> 参数意味着该函数将是一个"绑定方法"，因此您可以访问任务类型实例上的属性和方法。</p>
+<h2 id="_10">日志记录<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>工作器会自动为您设置日志记录，或者您可以手动配置日志记录。</p>
+<p>有一个特殊的日志记录器名为 "celery.task"，您可以继承此日志记录器以自动将任务名称和唯一ID作为日志的一部分。</p>
+<p>最佳实践是在模块顶部为所有任务创建一个公共的日志记录器：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery.utils.log</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_task_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_task_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Adding </span><span class="si">{0}</span><span class="s1"> + </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+</code></pre></div>
+<p>Celery 使用标准的 Python 日志记录器库，文档可以在 <a href="https://docs.python.org/dev/library/logging.html" target="_blank"><code>logging</code></a> 找到。</p>
+<p>您也可以使用 <code>print()</code>，因为写入标准输出/错误输出的任何内容都将重定向到日志记录系统（您可以禁用此功能，请参阅 <code>worker_redirect_stdouts</code>）。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>如果您在任务或任务模块中的某个地方创建了日志记录器实例，工作器不会更新重定向。</p>
+<p>如果您想将 <code>sys.stdout</code> 和 <code>sys.stderr</code> 重定向到自定义日志记录器，您必须手动启用此功能，例如：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_task_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="n">old_outs</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
+    <span class="n">rlevel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">worker_redirect_stdouts_level</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">redirect_stdouts_to_logger</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">rlevel</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Adding </span><span class="si">{0}</span><span class="s1"> + </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">old_outs</span>
+</code></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>如果您需要的特定 Celery 日志记录器没有发出日志，您应该检查日志记录器是否正确传播。在此示例中，启用了 "celery.app.trace" 以便发出 "succeeded in" 日志：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">celery</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="nd">@celery</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">after_setup_logger</span><span class="o">.</span><span class="n">connect</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_after_setup_logger</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;celery&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">propagate</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;celery.app.trace&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">propagate</span> <span class="o">=</span> <span class="kc">True</span>
+</code></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>如果您想完全禁用 Celery 日志记录配置，请使用 <code>setup_logging</code> 信号：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">celery</span>
+
+<span class="nd">@celery</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">setup_logging</span><span class="o">.</span><span class="n">connect</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_setup_logging</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">pass</span>
+</code></pre></div>
+</div>
+<h3 id="_11">参数检查<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
+<p>Celery 会在您调用任务时验证传递的参数，就像 Python 在调用普通函数时一样：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="go"># 使用两个参数调用任务可以正常工作：</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="go">&lt;AsyncResult: f59d71ca-1549-43e0-be41-4e8821a83c0c&gt;</span>
+
+<span class="go"># 只使用一个参数调用任务会失败：</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+  File <span class="nb">&quot;celery/app/task.py&quot;</span>, line <span class="m">376</span>, in <span class="n">delay</span>
+<span class="w">    </span><span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+  File <span class="nb">&quot;celery/app/task.py&quot;</span>, line <span class="m">485</span>, in <span class="n">apply_async</span>
+<span class="w">    </span><span class="n">check_arguments</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">args</span> <span class="ow">or</span> <span class="p">()),</span> <span class="o">**</span><span class="p">(</span><span class="n">kwargs</span> <span class="ow">or</span> <span class="p">{}))</span>
+<span class="gr">TypeError</span>: <span class="n">add() takes exactly 2 arguments (1 given)</span>
+</code></pre></div>
+<p>您可以通过将任务的 <code>typing</code> 属性设置为 <code>False</code> 来禁用任何任务的参数检查：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">typing</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="go"># 在本地工作，但接收任务的工作器会引发错误。</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+<span class="go">&lt;AsyncResult: f59d71ca-1549-43e0-be41-4e8821a83c0c&gt;</span>
+</code></pre></div>
+<h3 id="_12">隐藏参数中的敏感信息<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<p>当使用 <code>task_protocol</code> 2 或更高版本（自 4.0 起默认）时，您可以使用 <code>argsrepr</code> 和 <code>kwargsrepr</code> 调用参数来覆盖位置参数和关键字参数在日志和监控事件中的表示方式：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">apply_async</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">argsrepr</span><span class="o">=</span><span class="s1">&#39;(&lt;secret-x&gt;, &lt;secret-y&gt;)&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">charge</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">card</span><span class="o">=</span><span class="s1">&#39;1234 5678 1234 5678&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">kwargsrepr</span><span class="o">=</span><span class="nb">repr</span><span class="p">({</span><span class="s1">&#39;card&#39;</span><span class="p">:</span> <span class="s1">&#39;**** **** **** 5678&#39;</span><span class="p">})</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">delay</span><span class="p">()</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>敏感信息仍然可以被任何能够从代理读取任务消息或以其他方式拦截它的人访问。</p>
+<p>因此，如果您的消息包含敏感信息，您可能应该加密您的消息，或者在此示例中，信用卡的实际号码可以加密存储在安全存储中，您在任务中检索并解密。</p>
+</div>
+<h2 id="_13">重试<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
+<p><code>retry()</code> 可用于重新执行任务，例如在发生可恢复错误时。</p>
+<p>当您调用 <code>retry()</code> 时，它将使用相同的任务ID发送新消息，并确保消息传递到与原始任务相同的队列。</p>
+<p>当任务被重试时，这也会被记录为任务状态，以便您可以使用结果实例跟踪任务的进度（参见 <a href="#task-states">任务状态</a>）。</p>
+<p>以下是使用 <code>retry()</code> 的示例：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">send_twitter_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oauth</span><span class="p">,</span> <span class="n">tweet</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">twitter</span> <span class="o">=</span> <span class="n">Twitter</span><span class="p">(</span><span class="n">oauth</span><span class="p">)</span>
+        <span class="n">twitter</span><span class="o">.</span><span class="n">update_status</span><span class="p">(</span><span class="n">tweet</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="n">Twitter</span><span class="o">.</span><span class="n">FailWhaleError</span><span class="p">,</span> <span class="n">Twitter</span><span class="o">.</span><span class="n">LoginError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry</span><span class="p">(</span><span class="n">exc</span><span class="o">=</span><span class="n">exc</span><span class="p">)</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>retry()</code> 调用将引发异常，因此重试之后的任何代码都不会被执行。这是 <code>Retry</code> 异常，它不被视为错误，而是作为半谓词向工作进程表示任务将被重试，以便在启用结果后端时可以存储正确的状态。</p>
+<p>这是正常操作，除非重试的 <code>throw</code> 参数设置为 <code>False</code>，否则总是会发生。</p>
+</div>
+<p>任务的装饰器中的 bind 参数将提供对 <code>self</code>（任务类型实例）的访问。</p>
+<p><code>exc</code> 参数用于传递异常信息，这些信息在日志记录和存储任务结果时使用。异常和回溯都将在任务状态中可用（如果启用了结果后端）。</p>
+<p>如果任务有 <code>max_retries</code> 值，当超过最大重试次数时，当前异常将被重新抛出，但以下情况不会发生：</p>
+<ul>
+<li>
+<p>未提供 <code>exc</code> 参数</p>
+<p>在这种情况下，将引发 <code>MaxRetriesExceededError</code> 异常。</p>
+</li>
+<li>
+<p>没有当前异常</p>
+<p>如果没有原始异常可以重新抛出，则将使用 <code>exc</code> 参数，因此：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="bp">self</span><span class="o">.</span><span class="n">retry</span><span class="p">(</span><span class="n">exc</span><span class="o">=</span><span class="n">Twitter</span><span class="o">.</span><span class="n">LoginError</span><span class="p">())</span>
+</code></pre></div>
+<p>将引发给定的 <code>exc</code> 参数。</p>
+</li>
+</ul>
+<h3 id="_14">使用自定义重试延迟<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
+<p>当任务需要重试时，它可以在重试前等待指定的时间，默认延迟由 <code>default_retry_delay</code> 属性定义。默认设置为 3 分钟。请注意，设置延迟的单位是秒（整数或浮点数）。</p>
+<p>您还可以提供 <code>countdown</code> 参数给 <code>retry()</code> 来覆盖此默认值。</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default_retry_delay</span><span class="o">=</span><span class="mi">30</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>  <span class="c1"># 30分钟后重试</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">something_raising</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="c1"># 覆盖默认延迟，在1分钟后重试</span>
+        <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry</span><span class="p">(</span><span class="n">exc</span><span class="o">=</span><span class="n">exc</span><span class="p">,</span> <span class="n">countdown</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="_15">对已知异常进行自动重试<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
+<p>有时，您只想在引发特定异常时重试任务。</p>
+<p>幸运的是，您可以通过在 <code>task()</code> 装饰器中使用 <code>autoretry_for</code> 参数来告诉 Celery 自动重试任务：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">twitter.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">FailWhaleError</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">autoretry_for</span><span class="o">=</span><span class="p">(</span><span class="n">FailWhaleError</span><span class="p">,))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">refresh_timeline</span><span class="p">(</span><span class="n">user</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">twitter</span><span class="o">.</span><span class="n">refresh_timeline</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+</code></pre></div>
+<p>如果您想为内部的 <code>retry()</code> 调用指定自定义参数，请将 <code>retry_kwargs</code> 参数传递给 <code>task()</code> 装饰器：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">autoretry_for</span><span class="o">=</span><span class="p">(</span><span class="n">FailWhaleError</span><span class="p">,),</span> <span class="n">retry_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;max_retries&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">})</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">refresh_timeline</span><span class="p">(</span><span class="n">user</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">twitter</span><span class="o">.</span><span class="n">refresh_timeline</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+</code></pre></div>
+<p>这提供了手动处理异常的替代方案，上面的示例与将任务体包装在 <code>try</code> ... <code>except</code> 语句中的效果相同：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">refresh_timeline</span><span class="p">(</span><span class="n">user</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">twitter</span><span class="o">.</span><span class="n">refresh_timeline</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">FailWhaleError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">refresh_timeline</span><span class="o">.</span><span class="n">retry</span><span class="p">(</span><span class="n">exc</span><span class="o">=</span><span class="n">exc</span><span class="p">,</span> <span class="n">max_retries</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</code></pre></div>
+<p>如果您想对任何错误都自动重试，只需使用：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">autoretry_for</span><span class="o">=</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">x</span><span class="p">():</span>
+    <span class="o">...</span>
+</code></pre></div>
+<p>如果您的任务依赖于另一个服务，比如向API发出请求，那么使用<a href="https://en.wikipedia.org/wiki/Exponential_backoff">指数退避</a>是一个好主意，以避免用您的请求淹没该服务。幸运的是，Celery的自动重试支持使这变得容易。只需指定 <code>retry_backoff</code> 参数，如下所示：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">requests.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">RequestException</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">autoretry_for</span><span class="o">=</span><span class="p">(</span><span class="n">RequestException</span><span class="p">,),</span> <span class="n">retry_backoff</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">x</span><span class="p">():</span>
+    <span class="o">...</span>
+</code></pre></div>
+<p>默认情况下，这种指数退避还会引入随机<a href="https://en.wikipedia.org/wiki/Exponential_backoff#Jitter">抖动</a>，以避免所有任务在同一时刻运行。它还会将最大退避延迟限制为10分钟。所有这些设置都可以通过下面记录的选项进行自定义。</p>
+<p>您还可以在基于类的任务中设置 <code>autoretry_for</code>、<code>max_retries</code>、<code>retry_backoff</code>、<code>retry_backoff_max</code> 和 <code>retry_jitter</code> 选项：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseTaskWithRetry</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
+    <span class="n">autoretry_for</span> <span class="o">=</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,)</span>
+    <span class="n">max_retries</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">retry_backoff</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">retry_backoff_max</span> <span class="o">=</span> <span class="mi">700</span>
+    <span class="n">retry_jitter</span> <span class="o">=</span> <span class="kc">False</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>autoretry_for</td>
+<td>
+异常类的列表/元组。如果在任务执行期间引发这些异常中的任何一个，任务将自动重试。
+默认情况下，不会自动重试任何异常。
+</td>
+</tr>
+<tr>
+<td>max_retries</td>
+<td>
+一个数字。放弃前的最大重试次数。值为 <code>None</code> 表示任务将永远重试。
+默认情况下，此选项设置为 <code>3</code>。
+</td>
+</tr>
+<tr>
+<td>retry_backoff</td>
+<td>
+布尔值或数字。如果此选项设置为 <code>True</code>，自动重试将按照
+<a href="https://en.wikipedia.org/wiki/Exponential_backoff">指数退避</a> 的规则延迟。第一次重试将延迟1秒，
+第二次重试将延迟2秒，第三次延迟4秒，第四次延迟8秒，依此类推。
+（但是，如果启用了 <code>retry_jitter</code>，此延迟值会被修改。）
+如果此选项设置为数字，则用作延迟因子。例如，如果此选项设置为 <code>3</code>，
+第一次重试将延迟3秒，第二次延迟6秒，第三次延迟12秒，第四次延迟24秒，依此类推。
+默认情况下，此选项设置为 <code>False</code>，自动重试不会延迟。
+</td>
+</tr>
+<tr>
+<td>retry_backoff_max</td>
+<td>
+一个数字。如果启用了 <code>retry_backoff</code>，此选项将设置任务自动重试之间的
+最大延迟（以秒为单位）。默认情况下，此选项设置为 <code>600</code>，即10分钟。
+</td>
+</tr>
+<tr>
+<td>retry_jitter</td>
+<td>
+布尔值。抖动用于在指数退避延迟中引入随机性，以防止队列中的所有任务
+同时执行。如果此选项设置为 <code>True</code>，由 <code>retry_backoff</code>
+计算的延迟值被视为最大值，实际延迟值将是零到该最大值之间的随机数。
+默认情况下，此选项设置为 <code>True</code>。
+</td>
+</tr>
+<tr>
+<td>dont_autoretry_for</td>
+<td>
+异常类的列表/元组。这些异常不会被自动重试。
+这允许排除一些匹配 <code>autoretry_for</code> 但您不希望重试的异常。
+</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="pydantic">使用 Pydantic 进行参数验证<a class="headerlink" href="#pydantic" title="Permanent link">&para;</a></h2>
+<p>您可以通过传递 <code>pydantic=True</code> 来使用 <a href="https://pydantic.oaix.tech/">Pydantic</a> 验证和转换参数，以及基于类型提示序列化结果。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>参数验证仅涵盖任务端的参数/返回值。在使用 <code>delay()</code> 或 <code>apply_async()</code> 调用任务时，您仍然需要自己序列化参数。</p>
+</div>
+<p>例如：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ArgModel</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">int</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ReturnModel</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">pydantic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">x</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="n">ArgModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReturnModel</span><span class="p">:</span>
+    <span class="c1"># 类型提示为 Pydantic 模型的 args/kwargs 将被转换</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">ArgModel</span><span class="p">)</span>
+
+    <span class="c1"># 返回的模型将自动转换为字典</span>
+    <span class="k">return</span> <span class="n">ReturnModel</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;example: </span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>然后可以使用与模型匹配的字典调用任务，您将收到返回的模型"转储"（使用 <code>BaseModel.model_dump()</code> 序列化）：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">delay</span><span class="p">({</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">{&#39;value&#39;: &#39;example: 1&#39;}</span>
+</code></pre></div>
+<h3 id="_16">联合类型，泛型参数<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h3>
+<p>联合类型（例如 <code>Union[SomeModel, OtherModel]</code>）或泛型参数（例如 <code>list[SomeModel]</code>）<strong>不</strong>受支持。</p>
+<p>如果您想要支持列表或类似类型，建议使用 <code>pydantic.RootModel</code>。</p>
+<h3 id="_17">可选参数/返回值<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
+<p>可选参数或返回值也会得到正确处理。例如，给定以下任务：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="c1"># 模型与上面相同</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">pydantic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">x</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ArgModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ReturnModel</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">arg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">ReturnModel</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;example: </span><span class="si">{</span><span class="n">arg</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>您将得到以下行为：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">delay</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">delay</span><span class="p">({</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">{&#39;value&#39;: &#39;example: 1&#39;}</span>
+</code></pre></div>
+<h3 id="_18">返回值处理<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h3>
+<p>只有当返回的模型与注解匹配时，返回值才会被序列化。如果您传递不同类型的模型实例，它将<em>不会</em>被序列化。<code>mypy</code> 应该已经捕获此类错误，您应该修复类型提示。</p>
+<h3 id="pydantic_1">Pydantic 参数<a class="headerlink" href="#pydantic_1" title="Permanent link">&para;</a></h3>
+<p>还有几个影响 Pydantic 行为的选项：</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pydantic_strict</td>
+<td>
+默认情况下，<a href="https://docs.pydantic.dev/dev/concepts/strict_mode/">严格模式</a>
+是禁用的。您可以传递 <code>True</code> 来启用严格模型验证。
+</td>
+</tr>
+<tr>
+<td>pydantic_context</td>
+<td>
+在 Pydantic 模型验证期间传递<a href="https://docs.pydantic.dev/dev/concepts/validators/#validation-context">额外的验证上下文</a>。
+默认情况下，上下文已经包含应用程序对象作为 <code>celery_app</code> 和任务名称作为 <code>celery_task_name</code>。
+</td>
+</tr>
+<tr>
+<td>pydantic_dump_kwargs</td>
+<td>
+在序列化结果时，将这些附加参数传递给 <code>dump_kwargs()</code>。
+默认情况下，只传递 <code>mode='json'</code>。
+</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="task-options">选项列表<a class="headerlink" href="#task-options" title="Permanent link">&para;</a></h2>
+<p>任务装饰器可以接受许多选项来改变任务的行为方式，例如您可以使用 <code>rate_limit</code> 选项设置任务的速率限制。</p>
+<p>传递给任务装饰器的任何关键字参数实际上都将设置为结果任务类的属性，这是内置属性的列表。</p>
+<h3 id="_19">通用选项<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td>任务注册的名称。<br/><br/>您可以手动设置此名称，或者将使用模块和类名自动生成一个名称。</td>
+</tr>
+<tr>
+<td>request</td>
+<td>如果任务正在执行，这将包含有关当前请求的信息。使用线程本地存储。</td>
+</tr>
+<tr>
+<td>max_retries</td>
+<td>
+仅当任务调用 <code>self.retry</code> 或任务使用 <code>autoretry_for</code> 参数装饰时适用。<br/><br/>
+放弃前尝试重试的最大次数。<br/>
+如果重试次数超过此值，将引发 <code>MaxRetriesExceededError</code> 异常。<br/><br/>
+默认值为 <code>3</code>。值为 <code>None</code> 将禁用重试限制，任务将无限重试直到成功。
+</td>
+</tr>
+<tr>
+<td>throws</td>
+<td>
+可选的预期错误类元组，这些错误不应被视为实际错误。<br/><br/>
+此列表中的错误将被报告为结果后端的失败，但工作进程不会将该事件记录为错误，并且不会包含回溯信息。<br/><br/>
+示例：
+
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@task</span><span class="p">(</span><span class="n">throws</span><span class="o">=</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="n">HttpNotFound</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_foo</span><span class="p">():</span>
+    <span class="n">something</span><span class="p">()</span>
+</code></pre></div>
+
+错误类型：<br/><br/>
+
+- 预期错误（在 `Task.throws` 中）：以 `INFO` 严重性记录，排除回溯信息。<br/>
+- 意外错误：以 `ERROR` 严重性记录，包含回溯信息。
+</td>
+</tr>
+<tr>
+<td>default_retry_delay</td>
+<td>任务重试前默认等待时间（以秒为单位）。可以是 <code>int</code> 或 <code>float</code>。默认是三分钟的延迟。</td>
+</tr>
+<tr>
+<td>rate_limit</td>
+<td>
+设置此任务类型的速率限制（限制在给定时间范围内可以运行的任务数量）。当速率限制生效时，任务仍将完成，但可能需要一些时间才能允许开始。<br/><br/>
+如果为 <code>None</code>，则没有速率限制生效。如果是整数或浮点数，则解释为"每秒任务数"。<br/><br/>
+可以通过在值后附加 <code>"/s"</code>、<code>"/m"</code> 或 <code>"/h"</code> 来指定秒、分钟或小时的速率限制。任务将在指定的时间范围内均匀分布。<br/><br/>
+示例：<code>"100/m"</code>（每分钟一百个任务）。这将强制在同一工作实例上启动两个任务之间至少有600毫秒的延迟。<br/><br/>
+默认是 <code>task_default_rate_limit</code> 设置：如果未指定，意味着默认情况下任务速率限制被禁用。<br/><br/>
+请注意，这是*每个工作实例*的速率限制，而不是全局速率限制。要强制执行全局速率限制（例如，对于具有每秒最大请求数的API），您必须限制到特定队列。
+</td>
+</tr>
+<tr>
+<td>time_limit</td>
+<td>此任务的硬时间限制（以秒为单位）。未设置时使用工作进程的默认值。</td>
+</tr>
+<tr>
+<td>soft_time_limit</td>
+<td>此任务的软时间限制。未设置时使用工作进程的默认值。</td>
+</tr>
+<tr>
+<td>ignore_result</td>
+<td>
+不存储任务状态。请注意，这意味着您不能使用 <code>AsyncResult</code> 来检查任务是否准备就绪或获取其返回值。<br/><br/>
+注意：如果禁用任务结果，某些功能将无法工作。有关更多详细信息，请查看 Canvas 文档。
+</td>
+</tr>
+<tr>
+<td>store_errors_even_if_ignored</td>
+<td>如果为 <code>True</code>，即使任务配置为忽略结果，错误也将被存储。</td>
+</tr>
+<tr>
+<td>serializer</td>
+<td>
+标识要使用的默认序列化方法的字符串。默认为 <code>task_serializer</code> 设置。可以是 <code>pickle</code>、<code>json</code>、<code>yaml</code>，或任何已在 <code>kombu.serialization.registry</code> 中注册的自定义序列化方法。<br/><br/>
+请参阅 <a href="/user-guide/calling/#calling-serializers">调用指南 - 序列化器</a> 获取更多信息。
+</td>
+</tr>
+<tr>
+<td>compression</td>
+<td>
+标识要使用的默认压缩方案的字符串。<br/><br/>
+默认为 <code>task_compression</code> 设置。可以是 <code>gzip</code>、<code>bzip2</code>，或任何已在 <code>kombu.compression</code> 注册表中注册的自定义压缩方案。<br/><br/>
+请参阅 <a href="/user-guide/calling/#calling-compression">调用指南 - 压缩</a> 获取更多信息。
+</td>
+</tr>
+<tr>
+<td>backend</td>
+<td>用于此任务的结果存储后端。<code>celery.backends</code> 中后端类之一的实例。默认为 <code>app.backend</code>，由 <code>result_backend</code> 设置定义。</td>
+</tr>
+<tr>
+<td>acks_late</td>
+<td>
+如果设置为 <code>True</code>，此任务的消息将在任务执行**后**确认，而不是*刚好在执行前*（默认行为）。<br/><br/>
+注意：这意味着如果工作进程在执行过程中崩溃，任务可能会被执行多次。请确保您的任务是 幂等的。<br/><br/>
+全局默认值可以通过 <code>task_acks_late</code> 设置覆盖。
+</td>
+</tr>
+<tr>
+<td>track_started</td>
+<td>
+如果为 <code>True</code>，当任务由工作进程执行时，任务将报告其状态为 "started"。默认值为 <code>False</code>，
+因为正常行为是不报告该粒度级别。任务要么是挂起、完成，要么是等待重试。拥有"started"状态对于长时间运行的任务很有用，需要报告当前正在运行的任务。<br/><br/>
+执行任务的工作进程的主机名和进程ID将在状态元数据中可用（例如，`result.info['pid']`）<br/><br/>
+全局默认值可以通过 `task_track_started` 设置覆盖。
+</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="task-states">状态<a class="headerlink" href="#task-states" title="Permanent link">&para;</a></h2>
+<p>Celery 可以跟踪任务的当前状态。状态还包含成功任务的结果，或失败任务的异常和回溯信息。</p>
+<p>有多个<em>结果后端</em>可供选择，它们都有不同的优势和劣势。</p>
+<p>在任务的生命周期中，它会经历多个可能的状态，每个状态都可能附加任意的元数据。当任务进入新状态时，之前的状态会被遗忘，但某些转换可以被推断出来（例如，现在处于 <code>FAILED</code> 状态的任务，意味着它曾经处于 <code>STARTED</code> 状态）。</p>
+<p>还有状态集合，如 <code>FAILURE_STATES</code> 集合和 <code>READY_STATES</code> 集合。</p>
+<p>客户端使用这些集合的成员关系来决定是否应重新引发异常（<code>PROPAGATE_STATES</code>），或者状态是否可以缓存（如果任务准备就绪，则可以缓存）。</p>
+<h3 id="_20">结果后端<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h3>
+<p>如果您想跟踪任务或需要返回值，那么 Celery 必须将状态存储或发送到某个地方，以便以后可以检索。有多个内置的结果后端可供选择：SQLAlchemy/Django ORM、Memcached、RabbitMQ/QPid（<code>rpc</code>）和 Redis——或者您可以定义自己的后端。</p>
+<p>没有哪个后端适用于所有用例。您应该阅读每个后端的优势和劣势，并选择最适合您需求的后端。</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>后端使用资源来存储和传输结果。为确保
+资源被释放，您必须最终调用
+<code>get()</code> 或 <code>forget()</code> 在
+调用任务后返回的每个 <code>AsyncResult</code> 实例上。</p>
+</div>
+<h4 id="rpc-rabbitmqqpid">RPC 结果后端 (RabbitMQ/QPid)<a class="headerlink" href="#rpc-rabbitmqqpid" title="Permanent link">&para;</a></h4>
+<p>RPC 结果后端（<code>rpc://</code>）很特殊，因为它实际上并不<em>存储</em>状态，而是将它们作为消息发送。这是一个重要的区别，意味着结果<em>只能被检索一次</em>，并且<em>只能由发起任务的客户端</em>检索。两个不同的进程不能等待同一个结果。</p>
+<p>即使有这种限制，如果您需要实时接收状态更改，它也是一个绝佳的选择。使用消息传递意味着客户端不必轮询新状态。</p>
+<p>默认情况下，消息是瞬态的（非持久的），因此如果代理重启，结果将消失。您可以使用 <code>result_persistent</code> 设置来配置结果后端发送持久消息。</p>
+<h4 id="_21">数据库结果后端<a class="headerlink" href="#_21" title="Permanent link">&para;</a></h4>
+<p>将状态保存在数据库中可能对许多人很方便，特别是对于已经拥有数据库的 Web 应用程序，但它也有局限性。</p>
+<ul>
+<li>
+<p>轮询数据库以获取新状态是昂贵的，因此您应该增加操作的轮询间隔，例如 <code>result.get()</code>。</p>
+</li>
+<li>
+<p>某些数据库使用的默认事务隔离级别不适合轮询表的更改。</p>
+<p>在 MySQL 中，默认事务隔离级别是 <code>REPEATABLE-READ</code>：意味着事务在提交之前不会看到其他事务所做的更改。</p>
+<p>建议将其更改为 <code>READ-COMMITTED</code> 隔离级别。</p>
+</li>
+</ul>
+<h3 id="task-states">内置状态<a class="headerlink" href="#task-states" title="Permanent link">&para;</a></h3>
+<h4 id="pending">PENDING<a class="headerlink" href="#pending" title="Permanent link">&para;</a></h4>
+<p>任务正在等待执行或未知。任何未知的任务 ID 都被视为处于挂起状态。</p>
+<h4 id="started">STARTED<a class="headerlink" href="#started" title="Permanent link">&para;</a></h4>
+<p>任务已启动。默认情况下不报告，要启用请参见 <code>track_started</code>。</p>
+<table>
+<thead>
+<tr>
+<th>标签</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>meta-data</td>
+<td>执行任务的 worker 进程的 <code>pid</code> 和 <code>hostname</code>。</td>
+</tr>
+</tbody>
+</table>
+<h4 id="success">SUCCESS<a class="headerlink" href="#success" title="Permanent link">&para;</a></h4>
+<p>任务已成功执行。</p>
+<table>
+<thead>
+<tr>
+<th>标签</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>meta-data</td>
+<td><code>result</code> 包含任务的返回值。</td>
+</tr>
+<tr>
+<td>propagates</td>
+<td>是</td>
+</tr>
+<tr>
+<td>ready</td>
+<td>是</td>
+</tr>
+</tbody>
+</table>
+<h4 id="failure">FAILURE<a class="headerlink" href="#failure" title="Permanent link">&para;</a></h4>
+<p>任务执行失败。</p>
+<table>
+<thead>
+<tr>
+<th>标签</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>meta-data</td>
+<td><code>result</code> 包含发生的异常，<code>traceback</code> 包含引发异常时堆栈的回溯信息。</td>
+</tr>
+<tr>
+<td>propagates</td>
+<td>是</td>
+</tr>
+<tr>
+<td>ready</td>
+<td>是</td>
+</tr>
+</tbody>
+</table>
+<h4 id="retry">RETRY<a class="headerlink" href="#retry" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>标签</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>meta-data</td>
+<td><code>result</code> 包含导致重试的异常，<code>traceback</code> 包含引发异常时堆栈的回溯信息。</td>
+</tr>
+<tr>
+<td>propagates</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<h4 id="revoked">REVOKED<a class="headerlink" href="#revoked" title="Permanent link">&para;</a></h4>
+<p>任务已被撤销。</p>
+<table>
+<thead>
+<tr>
+<th>标签</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>propagates</td>
+<td>是</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_22">自定义状态<a class="headerlink" href="#_22" title="Permanent link">&para;</a></h3>
+<p>您可以轻松定义自己的状态，只需要一个唯一的名称。状态的名称通常是一个大写字符串。例如，您可以查看 <code>celery.contrib.abortable</code> 它定义了一个自定义的 <code>ABORTED</code> 状态。</p>
+<p>使用 <code>update_state()</code> 来更新任务的状态：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">upload_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filenames</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">file</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">filenames</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">called_directly</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s1">&#39;PROGRESS&#39;</span><span class="p">,</span>
+                <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;current&#39;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;total&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">filenames</span><span class="p">)})</span>
+</code></pre></div>
+<p>这里我创建了状态 <code>"PROGRESS"</code>，告诉任何了解此状态的应用程序该任务当前正在进行中，并且通过 <code>current</code> 和 <code>total</code> 计数作为状态元数据的一部分，还可以知道它在进程中的位置。这可以用于创建进度条等。</p>
+<h3 id="_23">创建可序列化的异常<a class="headerlink" href="#_23" title="Permanent link">&para;</a></h3>
+<p>一个鲜为人知的 Python 事实是，异常必须符合一些简单的规则才能支持被 pickle 模块序列化。</p>
+<p>当使用 Pickle 作为序列化器时，引发不可序列化异常的任务将无法正常工作。</p>
+<p>为确保您的异常可序列化，异常<em>必须</em>在其 <code>.args</code> 属性中提供它被实例化时使用的原始参数。确保这一点的最简单方法是让异常调用 <code>Exception.__init__</code>。</p>
+<p>让我们看一些有效的例子，以及一个无效的例子：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="c1"># 正确：</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HttpError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="c1"># 错误：</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HttpError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status_code</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="n">status_code</span>
+
+<span class="c1"># 正确：</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HttpError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status_code</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="n">status_code</span>
+        <span class="ne">Exception</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status_code</span><span class="p">)</span>  <span class="c1"># &lt;-- 必需</span>
+</code></pre></div>
+<p>所以规则是：对于任何支持自定义参数 <code>*args</code> 的异常，必须使用 <code>Exception.__init__(self, *args)</code>。</p>
+<p>没有对<em>关键字参数</em>的特殊支持，因此如果您希望在异常被反序列化时保留关键字参数，您必须将它们作为常规参数传递：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HttpError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="n">status_code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="n">headers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">body</span> <span class="o">=</span> <span class="n">body</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">HttpError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">status_code</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">body</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="_24">半谓词<a class="headerlink" href="#_24" title="Permanent link">&para;</a></h2>
+<p>工作器将任务包装在一个跟踪函数中，该函数记录任务的最终状态。有许多异常可以用来向此函数发出信号，以改变它处理任务返回的方式。</p>
+<h3 id="ignore">Ignore<a class="headerlink" href="#ignore" title="Permanent link">&para;</a></h3>
+<p>任务可以抛出 <code>Ignore</code> 异常来强制工作器忽略该任务。这意味着不会记录该任务的状态，但消息仍然会被确认（从队列中移除）。</p>
+<p>如果您想要实现自定义的撤销类功能，或者手动存储任务结果，可以使用此功能。</p>
+<p>示例：在Redis集合中保留已撤销的任务：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ignore</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">some_task</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">redis</span><span class="o">.</span><span class="n">ismember</span><span class="p">(</span><span class="s1">&#39;tasks.revoked&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">Ignore</span><span class="p">()</span>
+</code></pre></div>
+<p>示例：手动存储结果：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">states</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">celery.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ignore</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_tweets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+    <span class="n">timeline</span> <span class="o">=</span> <span class="n">twitter</span><span class="o">.</span><span class="n">get_timeline</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">called_directly</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">states</span><span class="o">.</span><span class="n">SUCCESS</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">timeline</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">Ignore</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="reject">Reject<a class="headerlink" href="#reject" title="Permanent link">&para;</a></h3>
+<p>任务可以抛出 <code>Reject</code> 异常来使用AMQP的 <code>basic_reject</code> 方法拒绝任务消息。除非启用了 <code>acks_late</code>，否则这不会产生任何效果。</p>
+<p>拒绝消息与确认消息具有相同的效果，但一些代理可能实现可以使用的附加功能。例如，RabbitMQ支持<a href="https://www.rabbitmq.com/docs/dlx">死信交换</a>的概念，其中可以配置队列使用死信交换，被拒绝的消息会被重新投递到该交换。</p>
+<p>Reject也可以用于重新排队消息，但请非常小心地使用此功能，因为它很容易导致无限消息循环。</p>
+<p>示例：当任务导致内存不足条件时使用reject：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">errno</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">celery.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Reject</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">acks_late</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">render_scene</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="n">get_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">renderer</span><span class="o">.</span><span class="n">render_scene</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+    <span class="c1"># 如果文件太大无法放入内存</span>
+    <span class="c1"># 我们拒绝它，以便它被重新投递到死信交换</span>
+    <span class="c1"># 我们可以手动检查情况。</span>
+    <span class="k">except</span> <span class="ne">MemoryError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">Reject</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">requeue</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">exc</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">ENOMEM</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">Reject</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">requeue</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># 对于任何其他错误，我们在10秒后重试。</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">countdown</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div>
+<p>示例：重新排队消息：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Reject</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">acks_late</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">requeues</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">delivery_info</span><span class="p">[</span><span class="s1">&#39;redelivered&#39;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="n">Reject</span><span class="p">(</span><span class="s1">&#39;no reason&#39;</span><span class="p">,</span> <span class="n">requeue</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;received two times&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>有关 <code>basic_reject</code> 方法的更多详细信息，请查阅您的代理文档。</p>
+<h3 id="retry_1">Retry<a class="headerlink" href="#retry_1" title="Permanent link">&para;</a></h3>
+<p><code>Retry</code> 异常由 <code>Task.retry</code> 方法抛出，用于告诉工作器任务正在被重试。</p>
+<h2 id="_25">自定义任务类<a class="headerlink" href="#_25" title="Permanent link">&para;</a></h2>
+<p>所有任务都继承自 <code>Task</code> 类。<code>run()</code> 方法成为任务的主体。</p>
+<p>例如，以下代码：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+</code></pre></div>
+<p>在幕后大致会这样做：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">_AddTask</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">Task</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+
+<span class="n">add</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="n">_AddTask</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+</code></pre></div>
+<h3 id="_26">实例化<a class="headerlink" href="#_26" title="Permanent link">&para;</a></h3>
+<p>任务<strong>不会</strong>为每个请求实例化，而是在任务注册表中作为全局实例注册。</p>
+<p>这意味着 <code>__init__</code> 构造函数在每个进程中只会被调用一次，并且任务类在语义上更接近于 Actor 模式。</p>
+<p>如果你有一个任务：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Task</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">NaiveAuthenticateServer</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">users</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;george&#39;</span><span class="p">:</span> <span class="s1">&#39;password&#39;</span><span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">users</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">==</span> <span class="n">password</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+</code></pre></div>
+<p>并且你将每个请求路由到同一个进程，那么它将在请求之间保持状态。</p>
+<p>这对于缓存资源也很有用，例如，一个缓存数据库连接的基础任务类：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Task</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DatabaseTask</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
+    <span class="n">_db</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">db</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="n">Database</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span>
+</code></pre></div>
+<h4 id="_27">每个任务使用<a class="headerlink" href="#_27" title="Permanent link">&para;</a></h4>
+<p>上述内容可以像这样添加到每个任务中：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery.app</span><span class="w"> </span><span class="kn">import</span> <span class="n">task</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="n">DatabaseTask</span><span class="p">,</span> <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">task</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="n">process_row</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+</code></pre></div>
+<p><code>process_rows</code> 任务的 <code>db</code> 属性将在每个进程中始终保持相同。</p>
+<h4 id="_28">应用程序范围使用<a class="headerlink" href="#_28" title="Permanent link">&para;</a></h4>
+<p>你也可以在整个 Celery 应用程序中使用你的自定义类，通过在实例化应用程序时将其作为 <code>task_cls</code> 参数传递。这个参数应该是一个字符串，给出你的 Task 类的 Python 路径，或者是类本身：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Celery</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Celery</span><span class="p">(</span><span class="s1">&#39;tasks&#39;</span><span class="p">,</span> <span class="n">task_cls</span><span class="o">=</span><span class="s1">&#39;your.module.path:DatabaseTask&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>这将使你在应用程序中使用装饰器语法声明的所有任务都使用你的 <code>DatabaseTask</code> 类，并且都将具有 <code>db</code> 属性。</p>
+<p>默认值是 Celery 提供的类：<code>'celery.app.task:Task'</code>。</p>
+<h3 id="_29">处理器<a class="headerlink" href="#_29" title="Permanent link">&para;</a></h3>
+<p>任务处理器是在任务生命周期特定点执行的方法。所有处理器都在执行任务的<strong>同一个</strong>工作进程和线程中<strong>同步</strong>运行。</p>
+<h4 id="_30">执行时间线<a class="headerlink" href="#_30" title="Permanent link">&para;</a></h4>
+<p>以下图表显示了确切的执行顺序：</p>
+<div class="language-text highlight"><pre><span></span><code>Worker Process Timeline
+┌───────────────────────────────────────────────────────────────┐
+│  1. before_start()      ← Blocks until complete               │
+│  2. run()               ← Your task function                  │
+│  3. [Result Backend]    ← State + return value persisted      │
+│  4. on_success() OR     ← Outcome-specific handler            │
+│     on_retry() OR       │                                     │
+│     on_failure()        │                                     │
+│  5. after_return()      ← Always runs last                    │
+└───────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p><strong>关键点：</strong></p>
+<ul>
+<li>所有处理器都在与你的任务<strong>相同的工作进程</strong>中运行</li>
+<li><code>before_start</code> <strong>阻塞</strong>任务 - <code>run()</code> 直到它完成后才会开始</li>
+<li>结果后端在 <code>on_success</code>/<code>on_failure</code> <strong>之前</strong>更新 - 其他客户端可以在处理器仍在运行时看到任务已完成</li>
+<li><code>after_return</code> <strong>总是</strong>执行，无论任务结果如何</li>
+</ul>
+</div>
+<h4 id="_31">可用的处理器<a class="headerlink" href="#_31" title="Permanent link">&para;</a></h4>
+<p><strong>before_start(self, task_id, args, kwargs)</strong></p>
+<p>由工作进程在任务开始执行之前运行。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>此处理器<strong>阻塞</strong>任务：<code>run()</code> 方法在 <code>before_start</code> 返回之前<em>不会</em>开始。</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>task_id</td>
+<td>要执行的任务的唯一ID。</td>
+</tr>
+<tr>
+<td>args</td>
+<td>要执行的任务的原始参数。</td>
+</tr>
+<tr>
+<td>kwargs</td>
+<td>要执行的任务的原始关键字参数。</td>
+</tr>
+</tbody>
+</table>
+<p>此处理器的返回值被忽略。</p>
+<p><strong>on_success(self, retval, task_id, args, kwargs)</strong></p>
+<p>成功处理器。</p>
+<p>如果任务成功执行，由工作进程运行。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>在任务结果已经持久化到结果后端<strong>之后</strong>调用。外部客户端可能在此处理器仍在运行时观察到任务为 <code>SUCCESS</code> 状态。</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>retval</td>
+<td>任务的返回值。</td>
+</tr>
+<tr>
+<td>task_id</td>
+<td>已执行任务的唯一ID。</td>
+</tr>
+<tr>
+<td>args</td>
+<td>已执行任务的原始参数。</td>
+</tr>
+<tr>
+<td>kwargs</td>
+<td>已执行任务的原始关键字参数。</td>
+</tr>
+</tbody>
+</table>
+<p>此处理器的返回值被忽略。</p>
+<p><strong>on_retry(self, exc, task_id, args, kwargs, einfo)</strong></p>
+<p>重试处理器。</p>
+<p>当任务要重试时由工作进程运行。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>在任务状态已在结果后端更新为 <code>RETRY</code> <strong>之后</strong>调用，但<strong>在</strong>重试被调度之前。</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>exc</td>
+<td>发送到 <code>retry()</code> 的异常。</td>
+</tr>
+<tr>
+<td>task_id</td>
+<td>要重试的任务的唯一ID。</td>
+</tr>
+<tr>
+<td>args</td>
+<td>要重试的任务的原始参数。</td>
+</tr>
+<tr>
+<td>kwargs</td>
+<td>要重试的任务的原始关键字参数。</td>
+</tr>
+<tr>
+<td>einfo</td>
+<td><code>billiard.einfo.ExceptionInfo</code> 实例。</td>
+</tr>
+</tbody>
+</table>
+<p>此处理器的返回值被忽略。</p>
+<p><strong>on_failure(self, exc, task_id, args, kwargs, einfo)</strong></p>
+<p>失败处理器。</p>
+<p>当任务失败时由工作进程运行。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>在任务结果已经以 <code>FAILURE</code> 状态持久化到结果后端<strong>之后</strong>调用。外部客户端可能在此处理器仍在运行时观察到任务失败。</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>exc</td>
+<td>任务引发的异常。</td>
+</tr>
+<tr>
+<td>task_id</td>
+<td>失败任务的唯一ID。</td>
+</tr>
+<tr>
+<td>args</td>
+<td>失败任务的原始参数。</td>
+</tr>
+<tr>
+<td>kwargs</td>
+<td>失败任务的原始关键字参数。</td>
+</tr>
+<tr>
+<td>einfo</td>
+<td><code>billiard.einfo.ExceptionInfo</code> 实例。</td>
+</tr>
+</tbody>
+</table>
+<p>此处理器的返回值被忽略。</p>
+<p><strong>after_return(self, status, retval, task_id, args, kwargs, einfo)</strong></p>
+<p>任务返回后调用的处理器。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>在 <code>on_success</code>/<code>on_retry</code>/<code>on_failure</code> <strong>之后</strong>执行。这是任务生命周期中的最终钩子，<strong>总是</strong>运行，无论结果如何。</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>status</td>
+<td>当前任务状态。</td>
+</tr>
+<tr>
+<td>retval</td>
+<td>任务返回值/异常。</td>
+</tr>
+<tr>
+<td>task_id</td>
+<td>任务的唯一ID。</td>
+</tr>
+<tr>
+<td>args</td>
+<td>返回的任务的原始参数。</td>
+</tr>
+<tr>
+<td>kwargs</td>
+<td>返回的任务的原始关键字参数。</td>
+</tr>
+<tr>
+<td>einfo</td>
+<td><code>billiard.einfo.ExceptionInfo</code> 实例。</td>
+</tr>
+</tbody>
+</table>
+<p>此处理器的返回值被忽略。</p>
+<h3 id="_32">示例用法<a class="headerlink" href="#_32" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Task</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyTask</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">before_start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_id</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Task </span><span class="si">{</span><span class="n">task_id</span><span class="si">}</span><span class="s2"> starting with args </span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># 这会阻塞 - run() 在此返回之前不会开始</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_success</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">retval</span><span class="p">,</span> <span class="n">task_id</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Task </span><span class="si">{</span><span class="n">task_id</span><span class="si">}</span><span class="s2"> succeeded with result: </span><span class="si">{</span><span class="n">retval</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># 此时结果已经对客户端可见</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_failure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">task_id</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">einfo</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Task </span><span class="si">{</span><span class="n">task_id</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># 任务状态在后端已经是 FAILURE</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">after_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">retval</span><span class="p">,</span> <span class="n">task_id</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">einfo</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Task </span><span class="si">{</span><span class="n">task_id</span><span class="si">}</span><span class="s2"> finished with status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># 总是最后运行</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="n">MyTask</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">my_task</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+</code></pre></div>
+<h3 id="_33">请求和自定义请求<a class="headerlink" href="#_33" title="Permanent link">&para;</a></h3>
+<p>当接收到运行任务的消息时，<a href="../workers/">工作进程指南</a>创建一个 <code>request</code> 来表示这种需求。</p>
+<p>自定义任务类可以通过更改属性 <code>celery.app.task.Task.Request</code> 来覆盖要使用的请求类。你可以分配自定义请求类本身，或者其完全限定名称。</p>
+<p>请求有几个职责。自定义请求类应该覆盖所有这些职责——它们负责实际运行和跟踪任务。我们强烈建议从 <code>celery.worker.request.Request</code> 继承。</p>
+<p>当使用 <a href="../workers/#worker-concurrency">工作进程指南 - 并发性</a> 时，方法
+<code>celery.worker.request.Request.on_timeout</code> 和
+<code>celery.worker.request.Request.on_failure</code> 在主工作进程中执行。应用程序可以利用这种机制来检测使用 <code>celery.app.task.Task.on_failure</code> 无法检测到的故障。</p>
+<p>例如，以下自定义请求检测并记录硬时间限制和其他故障。</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Task</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">celery.worker.request</span><span class="w"> </span><span class="kn">import</span> <span class="n">Request</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;my.package&#39;</span><span class="p">)</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyRequest</span><span class="p">(</span><span class="n">Request</span><span class="p">):</span>
+   <span class="s1">&#39;一个最小的自定义请求，用于记录故障和硬时间限制。&#39;</span>
+
+   <span class="k">def</span><span class="w"> </span><span class="nf">on_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">soft</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+       <span class="nb">super</span><span class="p">(</span><span class="n">MyRequest</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">on_timeout</span><span class="p">(</span><span class="n">soft</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+       <span class="k">if</span> <span class="ow">not</span> <span class="n">soft</span><span class="p">:</span>
+          <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+              <span class="s1">&#39;A hard timeout was enforced for task </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+              <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">name</span>
+          <span class="p">)</span>
+
+   <span class="k">def</span><span class="w"> </span><span class="nf">on_failure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_info</span><span class="p">,</span> <span class="n">send_failed_event</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_ok</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+       <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_failure</span><span class="p">(</span>
+           <span class="n">exc_info</span><span class="p">,</span>
+           <span class="n">send_failed_event</span><span class="o">=</span><span class="n">send_failed_event</span><span class="p">,</span>
+           <span class="n">return_ok</span><span class="o">=</span><span class="n">return_ok</span>
+       <span class="p">)</span>
+       <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+           <span class="s1">&#39;Failure detected for task </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">name</span>
+       <span class="p">)</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyTask</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
+   <span class="n">Request</span> <span class="o">=</span> <span class="n">MyRequest</span>  <span class="c1"># 你可以使用完全限定名称 &#39;my.package:MyRequest&#39;</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="n">MyTask</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">some_longrunning_task</span><span class="p">():</span>
+   <span class="c1"># 发挥你的想象力</span>
+</code></pre></div>
+<h2 id="_34">工作原理<a class="headerlink" href="#_34" title="Permanent link">&para;</a></h2>
+<p>接下来是技术细节。这部分内容不是您必须了解的，但您可能会感兴趣。</p>
+<p>所有定义的任务都列在一个注册表中。该注册表包含task名称及其任务类的列表。您可以自己检查这个注册表：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">proj.celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">tasks</span>
+<span class="go">{&#39;celery.chord_unlock&#39;:</span>
+<span class="go">    &lt;@task: celery.chord_unlock&gt;,</span>
+<span class="go"> &#39;celery.backend_cleanup&#39;:</span>
+<span class="go">    &lt;@task: celery.backend_cleanup&gt;,</span>
+<span class="go"> &#39;celery.chord&#39;:</span>
+<span class="go">    &lt;@task: celery.chord&gt;}</span>
+</code></pre></div>
+<p>这是Celery内置的任务列表。请注意，任务只有在定义它们的模块被导入时才会注册。</p>
+<p>默认加载器会导入 <code>imports</code> 设置中列出的任何模块。</p>
+<p><code>task()</code> 装饰器负责将您的任务注册到应用程序的任务注册表中。</p>
+<p>当任务被发送时，不会发送实际的函数代码，只发送要执行的task名称。当工作器接收到消息时，它可以在其任务注册表中查找该名称以找到执行代码。</p>
+<p>这意味着您的工作器应该始终与客户端使用相同的软件进行更新。这是一个缺点，但替代方案是一个尚未解决的技术挑战。</p>
+<h2 id="_35">提示和最佳实践<a class="headerlink" href="#_35" title="Permanent link">&para;</a></h2>
+<h3 id="_36">忽略不需要的结果<a class="headerlink" href="#_36" title="Permanent link">&para;</a></h3>
+<p>如果您不关心任务的结果，请务必设置 <code>ignore_result</code> 选项，因为存储结果会浪费时间和资源。</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">ignore_result</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mytask</span><span class="p">():</span>
+    <span class="n">something</span><span class="p">()</span>
+</code></pre></div>
+<p>甚至可以使用 <code>task_ignore_result</code> 设置全局禁用结果。</p>
+<p>在调用 <code>apply_async</code> 时，可以通过传递 <code>ignore_result</code> 布尔参数，按每次执行启用/禁用结果。</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mytask</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="c1"># 不会存储结果</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">mytask</span><span class="o">.</span><span class="n">apply_async</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">ignore_result</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">())</span> <span class="c1"># -&gt; None</span>
+
+<span class="c1"># 会存储结果</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">mytask</span><span class="o">.</span><span class="n">apply_async</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">ignore_result</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">())</span> <span class="c1"># -&gt; 3</span>
+</code></pre></div>
+<p>默认情况下，当配置了结果后端时，任务将<em>不会忽略结果</em>（<code>ignore_result=False</code>）。</p>
+<p>选项优先级顺序如下：</p>
+<ol>
+<li>全局 <code>task_ignore_result</code></li>
+<li><code>ignore_result</code> 选项</li>
+<li>任务执行选项 <code>ignore_result</code></li>
+</ol>
+<h3 id="_37">更多优化提示<a class="headerlink" href="#_37" title="Permanent link">&para;</a></h3>
+<p>您可以在 <a href="../optimizing/" target="_blank">优化指南</a> 中找到其他优化提示。</p>
+<h3 id="_38">避免启动同步子任务<a class="headerlink" href="#_38" title="Permanent link">&para;</a></h3>
+<p>让一个任务等待另一个任务的结果是非常低效的，如果工作池耗尽，甚至可能导致死锁。</p>
+<p>请改为使用异步设计，例如使用<em>回调</em>。</p>
+<p><strong>不好的做法</strong>：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">update_page_info</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="n">page</span> <span class="o">=</span> <span class="n">fetch_page</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="n">parse_page</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">page</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+    <span class="n">store_page_info</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fetch_page</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">myhttplib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_page</span><span class="p">(</span><span class="n">page</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">myparser</span><span class="o">.</span><span class="n">parse_document</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">store_page_info</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">PageInfo</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>好的做法</strong>：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_page_info</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="c1"># fetch_page -&gt; parse_page -&gt; store_page</span>
+    <span class="n">chain</span> <span class="o">=</span> <span class="n">fetch_page</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="o">|</span> <span class="n">parse_page</span><span class="o">.</span><span class="n">s</span><span class="p">()</span> <span class="o">|</span> <span class="n">store_page_info</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">chain</span><span class="p">()</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fetch_page</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">myhttplib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_page</span><span class="p">(</span><span class="n">page</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">myparser</span><span class="o">.</span><span class="n">parse_document</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">ignore_result</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">store_page_info</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+    <span class="n">PageInfo</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">)</span>
+</code></pre></div>
+<p>这里我通过链接不同的 <code>signature</code> 创建了一个任务链。您可以在 <a href="../designing-workflows/" target="_blank">设计工作流</a> 中阅读有关链和其他强大构造的内容。</p>
+<p>默认情况下，Celery 不允许您在任务内同步运行子任务，但在罕见或极端情况下，您可能需要这样做。</p>
+<p><strong>警告</strong>：启用子任务同步运行是不推荐的！</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">update_page_info</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="n">page</span> <span class="o">=</span> <span class="n">fetch_page</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">disable_sync_subtasks</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="n">parse_page</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">page</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">disable_sync_subtasks</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">store_page_info</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fetch_page</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">myhttplib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_page</span><span class="p">(</span><span class="n">page</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">myparser</span><span class="o">.</span><span class="n">parse_document</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">store_page_info</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">PageInfo</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="_39">性能和策略<a class="headerlink" href="#_39" title="Permanent link">&para;</a></h2>
+<h3 id="_40">粒度<a class="headerlink" href="#_40" title="Permanent link">&para;</a></h3>
+<p>任务粒度是每个子任务所需的计算量。通常来说，将问题拆分成许多小任务比使用几个长时间运行的任务更好。</p>
+<p>使用较小的任务，您可以并行处理更多任务，并且任务不会运行太长时间而阻塞工作进程处理其他等待的任务。</p>
+<p>然而，执行任务确实有开销。需要发送消息，数据可能不是本地的，等等。因此，如果任务过于细粒度，增加的开销可能会抵消任何好处。</p>
+<div class="admonition quote">
+<p class="admonition-title"><a href="http://oreilly.com/catalog/9780596521547">《并发编程的艺术》</a>这本书有一个专门讨论任务粒度主题的章节[AOC1]<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup>。</p>
+</div>
+<h3 id="_41">数据局部性<a class="headerlink" href="#_41" title="Permanent link">&para;</a></h3>
+<p>处理任务的工作进程应尽可能靠近数据。最好是在内存中有一个副本，最坏的情况是从另一个大陆进行完整传输。</p>
+<p>如果数据很远，您可以尝试在位置运行另一个工作进程，或者如果不可能的话，缓存经常使用的数据，或预加载您知道将要使用的数据。</p>
+<p>在工作进程之间共享数据的最简单方法是使用分布式缓存系统，如<a href="https://memcached.org/">memcached</a>。</p>
+<div class="admonition quote">
+<p class="admonition-title">Jim Gray的论文<a href="https://www.microsoft.com/en-us/research/publication/distributed-computing-economics/">分布式计算经济学</a>是数据局部性主题的优秀介绍。</p>
+</div>
+<h3 id="_42">状态<a class="headerlink" href="#_42" title="Permanent link">&para;</a></h3>
+<p>由于Celery是一个分布式系统，您无法知道任务将在哪个进程或哪台机器上执行。您甚至无法知道任务是否会及时运行。</p>
+<p>古老的异步格言告诉我们"断言世界是任务的责任"。这意味着自任务请求以来，世界视图可能已经改变，因此任务有责任确保世界处于应有的状态；如果您有一个重新索引搜索引擎的任务，并且搜索引擎最多每5分钟才应重新索引一次，那么这必须是任务的责任来断言这一点，而不是调用者的责任。</p>
+<p>另一个需要注意的问题是Django模型对象。它们不应作为参数传递给任务。几乎总是更好的是在任务运行时从数据库中重新获取对象，因为使用旧数据可能导致竞态条件。</p>
+<p>想象以下场景：您有一篇文章和一个自动扩展其中某些缩写的任务：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Article</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">()</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">expand_abbreviations</span><span class="p">(</span><span class="n">article</span><span class="p">):</span>
+    <span class="n">article</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;MyCorp&#39;</span><span class="p">,</span> <span class="s1">&#39;My Corporation&#39;</span><span class="p">)</span>
+    <span class="n">article</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</code></pre></div>
+<p>首先，作者创建一篇文章并保存，然后作者点击一个按钮来启动缩写任务：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">article</span> <span class="o">=</span> <span class="n">Article</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">102</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">expand_abbreviations</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+</code></pre></div>
+<p>现在，队列非常繁忙，因此任务将在2分钟后才会运行。与此同时，另一位作者对文章进行了更改，因此当任务最终运行时，文章正文会恢复到旧版本，因为任务参数中包含了旧正文。</p>
+<p>修复竞态条件很容易，只需使用文章ID，并在任务体中重新获取文章：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">expand_abbreviations</span><span class="p">(</span><span class="n">article_id</span><span class="p">):</span>
+    <span class="n">article</span> <span class="o">=</span> <span class="n">Article</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">article_id</span><span class="p">)</span>
+    <span class="n">article</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;MyCorp&#39;</span><span class="p">,</span> <span class="s1">&#39;My Corporation&#39;</span><span class="p">)</span>
+    <span class="n">article</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</code></pre></div>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">expand_abbreviations</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">article_id</span><span class="p">)</span>
+</code></pre></div>
+<p>这种方法甚至可能有性能优势，因为发送大消息可能很昂贵。</p>
+<h3 id="_43">数据库事务<a class="headerlink" href="#_43" title="Permanent link">&para;</a></h3>
+<p>让我们看另一个例子：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">transaction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">HttpResponseRedirect</span>
+
+<span class="nd">@transaction</span><span class="o">.</span><span class="n">atomic</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_article</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">article</span> <span class="o">=</span> <span class="n">Article</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+    <span class="n">expand_abbreviations</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">article</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span><span class="s1">&#39;/articles/&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>这是一个Django视图，在数据库中创建一个文章对象，然后将主键传递给任务。它使用 <code>transaction.atomic</code> 装饰器，该装饰器将在视图返回时提交事务，或者在视图引发异常时回滚。</p>
+<p>存在竞态条件，因为事务是原子性的。这意味着文章对象在视图函数返回响应之前不会持久化到数据库中。如果异步任务在事务提交之前开始执行，它可能会尝试查询尚不存在的文章对象。为了防止这种情况，我们需要确保在触发任务之前提交事务。</p>
+<p>解决方案是使用 <code>delay_on_commit()</code> 代替：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">transaction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">HttpResponseRedirect</span>
+
+<span class="nd">@transaction</span><span class="o">.</span><span class="n">atomic</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_article</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">article</span> <span class="o">=</span> <span class="n">Article</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+    <span class="n">expand_abbreviations</span><span class="o">.</span><span class="n">delay_on_commit</span><span class="p">(</span><span class="n">article</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span><span class="s1">&#39;/articles/&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>此方法在Celery 5.4中添加。它是一个快捷方式，使用Django的 <code>on_commit</code> 回调在所有事务成功提交后启动您的Celery任务。</p>
+<h4 id="celery-54">对于Celery &lt;5.4<a class="headerlink" href="#celery-54" title="Permanent link">&para;</a></h4>
+<p>如果您使用的是较旧版本的Celery，可以使用Django回调直接复制此行为，如下所示：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">transaction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">HttpResponseRedirect</span>
+
+<span class="nd">@transaction</span><span class="o">.</span><span class="n">atomic</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_article</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">article</span> <span class="o">=</span> <span class="n">Article</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+    <span class="n">transaction</span><span class="o">.</span><span class="n">on_commit</span><span class="p">(</span>
+        <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">expand_abbreviations</span><span class="o">.</span><span class="n">delay</span><span class="p">,</span> <span class="n">article</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span><span class="s1">&#39;/articles/&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>on_commit</code>在Django 1.9及以上版本中可用，如果您使用的是较早版本，则<a href="https://github.com/carljm/django-transaction-hooks">django-transaction-hooks</a>库添加了对它的支持。</p>
+</div>
+<h2 id="_44">示例<a class="headerlink" href="#_44" title="Permanent link">&para;</a></h2>
+<p>让我们举一个真实世界的例子：一个需要过滤评论垃圾邮件的博客。当评论创建时，垃圾邮件过滤器在后台运行，因此用户无需等待其完成。</p>
+<p>我有一个允许在博客文章上评论的Django博客应用程序。我将描述这个应用程序的模型/视图和任务部分。</p>
+<h3 id="blogmodelspy"><code>blog/models.py</code><a class="headerlink" href="#blogmodelspy" title="Permanent link">&para;</a></h3>
+<p>评论模型如下所示：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.utils.translation</span><span class="w"> </span><span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Comment</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+    <span class="n">email_address</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">EmailField</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;email address&#39;</span><span class="p">))</span>
+    <span class="n">homepage</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">URLField</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;home page&#39;</span><span class="p">),</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verify_exists</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">comment</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;comment&#39;</span><span class="p">))</span>
+    <span class="n">pub_date</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Published date&#39;</span><span class="p">),</span> <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">auto_add_now</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">is_spam</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;spam?&#39;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;comment&#39;</span><span class="p">)</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;comments&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>在发布评论的视图中，我首先将评论写入数据库，然后在后台启动垃圾邮件过滤器任务。</p>
+<h3 id="blogviewspy"><code>blog/views.py</code><a class="headerlink" href="#blogviewspy" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">django</span><span class="w"> </span><span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">HttpResponseRedirect</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.template.context</span><span class="w"> </span><span class="kn">import</span> <span class="n">RequestContext</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.shortcuts</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_object_or_404</span><span class="p">,</span> <span class="n">render_to_response</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">blog</span><span class="w"> </span><span class="kn">import</span> <span class="n">tasks</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">blog.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Comment</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CommentForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModelForm</span><span class="p">):</span>
+
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Comment</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">add_comment</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">template_name</span><span class="o">=</span><span class="s1">&#39;comments/create.html&#39;</span><span class="p">):</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Entry</span><span class="p">,</span> <span class="n">slug</span><span class="o">=</span><span class="n">slug</span><span class="p">)</span>
+    <span class="n">remote_addr</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;REMOTE_ADDR&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;post&#39;</span><span class="p">:</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">CommentForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">FILES</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            <span class="n">comment</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="c1"># 异步检查垃圾邮件。</span>
+            <span class="n">tasks</span><span class="o">.</span><span class="n">spam_filter</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">comment_id</span><span class="o">=</span><span class="n">comment</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                    <span class="n">remote_addr</span><span class="o">=</span><span class="n">remote_addr</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span><span class="n">post</span><span class="o">.</span><span class="n">get_absolute_url</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">CommentForm</span><span class="p">()</span>
+
+    <span class="n">context</span> <span class="o">=</span> <span class="n">RequestContext</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">render_to_response</span><span class="p">(</span><span class="n">template_name</span><span class="p">,</span> <span class="n">context_instance</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+</code></pre></div>
+<p>为了过滤评论中的垃圾邮件，我使用<a href="http://akismet.com/faq/">Akismet</a>，该服务用于过滤发布到免费博客平台<a href="https://wordpress.com/">Wordpress</a>的评论中的垃圾邮件。<a href="http://akismet.com/faq/">Akismet</a>对个人使用是免费的，但对于商业用途需要付费。您必须注册他们的服务才能获得API密钥。</p>
+<p>为了向<a href="http://akismet.com/faq/">Akismet</a>进行API调用，我使用由<a href="http://www.voidspace.org.uk/">Michael Foord</a>编写的<a href="http://www.voidspace.org.uk/downloads/akismet.py">akismet.py</a>库。</p>
+<h3 id="blogtaskspy"><code>blog/tasks.py</code><a class="headerlink" href="#blogtaskspy" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">Celery</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">akismet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Akismet</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.core.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImproperlyConfigured</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.sites.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Site</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">blog.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Comment</span>
+
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Celery</span><span class="p">(</span><span class="n">broker</span><span class="o">=</span><span class="s1">&#39;amqp://&#39;</span><span class="p">)</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">spam_filter</span><span class="p">(</span><span class="n">comment_id</span><span class="p">,</span> <span class="n">remote_addr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">spam_filter</span><span class="o">.</span><span class="n">get_logger</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Running spam filter for comment </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">comment_id</span><span class="p">)</span>
+
+    <span class="n">comment</span> <span class="o">=</span> <span class="n">Comment</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">comment_id</span><span class="p">)</span>
+    <span class="n">current_domain</span> <span class="o">=</span> <span class="n">Site</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_current</span><span class="p">()</span><span class="o">.</span><span class="n">domain</span>
+    <span class="n">akismet</span> <span class="o">=</span> <span class="n">Akismet</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">AKISMET_KEY</span><span class="p">,</span> <span class="s1">&#39;http://</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">current_domain</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">akismet</span><span class="o">.</span><span class="n">verify_key</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">ImproperlyConfigured</span><span class="p">(</span><span class="s1">&#39;Invalid AKISMET_KEY&#39;</span><span class="p">)</span>
+
+
+    <span class="n">is_spam</span> <span class="o">=</span> <span class="n">akismet</span><span class="o">.</span><span class="n">comment_check</span><span class="p">(</span><span class="n">user_ip</span><span class="o">=</span><span class="n">remote_addr</span><span class="p">,</span>
+                        <span class="n">comment_content</span><span class="o">=</span><span class="n">comment</span><span class="o">.</span><span class="n">comment</span><span class="p">,</span>
+                        <span class="n">comment_author</span><span class="o">=</span><span class="n">comment</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                        <span class="n">comment_author_email</span><span class="o">=</span><span class="n">comment</span><span class="o">.</span><span class="n">email_address</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_spam</span><span class="p">:</span>
+        <span class="n">comment</span><span class="o">.</span><span class="n">is_spam</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">comment</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">is_spam</span>
+</code></pre></div>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Breshears, Clay. 第2.2.1节，"并发编程的艺术"。O'Reilly Media, Inc. 2009年5月15日。ISBN-13 978-0-596-52153-0。&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../application/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 应用程序">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                应用程序
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../calling/" class="md-footer__link md-footer__link--next" aria-label="下一页: 调用">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                调用
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      译者 <a href="https://github.com/oaixnah" target="_blank">oaixnah</a>
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.tabs.link","navigation.instant","navigation.instant.prefetch","navigation.instant.progress","navigation.indexes","navigation.top","navigation.footer","navigation.tabs","navigation.expand","navigation.tracking","search.suggest","search.highlight","search.share","toc.follow"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"已复制","clipboard.copy":"复制","search.result.more.one":"在该页上还有 1 个符合条件的结果","search.result.more.other":"在该页上还有 # 个符合条件的结果","search.result.none":"没有找到符合条件的结果","search.result.one":"找到 1 个符合条件的结果","search.result.other":"# 个符合条件的结果","search.result.placeholder":"键入以开始搜索","search.result.term.missing":"缺少","select.version":"选择当前版本"},"version":null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.00c35305.min.js"></script>
+      
+    
+  </body>
+</html>

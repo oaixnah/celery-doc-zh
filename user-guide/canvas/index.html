@@ -1,0 +1,3044 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Celery画布：设计工作流指南 - 详细介绍Celery任务签名、原语和工作流设计，包括group并行任务、chain任务链、chord带回调的组等高级功能，帮助开发者构建复杂分布式任务系统。">
+      
+      
+        <meta name="author" content="oaixnah">
+      
+      
+        <link rel="canonical" href="https://celery.oaix.tech/user-guide/canvas/">
+      
+      
+        <link rel="prev" href="../calling/">
+      
+      
+        <link rel="next" href="../workers/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.ico">
+      <meta name="generator" content="zensical-0.0.15">
+    
+    
+      
+        <title>画布：设计工作流 - Celery 中文文档</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.f1b6466b.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+  
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+  
+  <style>:root{}</style>
+
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="Celery 中文文档" class="md-header__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+      
+  <img src="../../assets/celery_128.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Celery 中文文档
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              画布：设计工作流
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="查找">
+  <button type="button" class="md-search__button">
+    查找
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/celery/celery" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    celery/celery
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/introduction/" class="md-tabs__link">
+          
+  
+  快速入门
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../application/" class="md-tabs__link">
+          
+  
+  用户指南
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../django/" class="md-tabs__link">
+        
+  
+  Django
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../faq/" class="md-tabs__link">
+        
+  
+  QA
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Celery 中文文档" class="md-nav__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+      
+  <img src="../../assets/celery_128.png" alt="logo">
+
+    </a>
+    Celery 中文文档
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/celery/celery" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    celery/celery
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速入门
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    快速入门
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    介绍
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/backends-and-brokers/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后端与代理
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    后端与代理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/redis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/rabbitmq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RabbitMQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/sqs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SQS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/kafka/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kafka
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/gcpubsub/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Google Pub/Sub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/first-steps-with-celery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速上手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后续步骤
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    用户指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    用户指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../application/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    应用程序
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../calling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    画布
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    画布
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        签名
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="签名">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        部分签名
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        不可变性
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        回调
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        原语
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="原语">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chains
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Chains">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#idtask-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        任务 ID（Task ID）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        图（Graphs）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#canvas-group" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Groups
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Groups">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        回调和错误处理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        展开
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chords
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Chords">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        错误处理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        重要注意事项
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-starmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Map &amp; Starmap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chunks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chunks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        标记
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="标记">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        画布标记
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        自定义标记
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        回调标记
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工作进程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../daemonizing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    守护进程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../periodic-tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    周期性任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../routing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    路由任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    监控与管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安全
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../optimizing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_13" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../concurrency/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    并发
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_13" id="__nav_3_13_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    并发
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concurrency/eventlet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eventlet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concurrency/gevent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gevent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../signals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    信号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extending/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    扩展
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    配置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../django/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Django
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        签名
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="签名">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        部分签名
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        不可变性
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        回调
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        原语
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="原语">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chains
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Chains">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#idtask-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        任务 ID（Task ID）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        图（Graphs）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#canvas-group" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Groups
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Groups">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        回调和错误处理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        展开
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chords
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Chords">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        错误处理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        重要注意事项
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-starmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Map &amp; Starmap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chunks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chunks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        标记
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="标记">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        画布标记
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        自定义标记
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        回调标记
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+  
+
+
+<h1 id="_1">画布：设计工作流<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h2 id="_2">签名<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>您刚刚在 <a href="../calling/" target="_blank">调用指南</a> 指南中学习了如何使用任务的 <code>delay()</code> 方法来调用任务，这通常就是您所需要的全部，但有时您可能希望将任务调用的签名传递给另一个进程或作为另一个函数的参数。</p>
+<p><code>signature()</code> 包装了单个任务调用的参数、关键字参数和执行选项，使其可以传递给函数，甚至可以序列化并通过网络发送。</p>
+<ul>
+<li>
+<p>您可以使用任务名称创建 <code>add()</code> 任务的签名，如下所示：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">signature</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signature</span><span class="p">(</span><span class="s1">&#39;tasks.add&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">countdown</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="go">tasks.add(2, 2)</span>
+</code></pre></div>
+<p>此任务具有 2 个参数（两个参数）的签名：<code>(2, 2)</code>，并将倒计时执行选项设置为 10。</p>
+</li>
+<li>
+<p>或者您可以使用任务的 <code>signature()</code> 方法创建一个：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">signature</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">countdown</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="go">tasks.add(2, 2)</span>
+</code></pre></div>
+</li>
+<li>
+<p>还有一个使用星号参数的快捷方式：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">tasks.add(2, 2)</span>
+</code></pre></div>
+</li>
+<li>
+<p>也支持关键字参数：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">tasks.add(2, 2, debug=True)</span>
+</code></pre></div>
+</li>
+<li>
+<p>从任何签名实例中，您可以检查不同的字段：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">signature</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">{</span><span class="s1">&#39;debug&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="n">countdown</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">args</span>
+<span class="go">(2, 2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">kwargs</span>
+<span class="go">{&#39;debug&#39;: True}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">options</span>
+<span class="go">{&#39;countdown&#39;: 10}</span>
+</code></pre></div>
+</li>
+<li>
+<p>它支持 <code>delay()</code>、<code>apply_async()</code> 等的"调用 API"，包括直接调用（<code>__call__</code>）。</p>
+<p>调用签名将在当前进程中内联执行任务：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)()</span>
+<span class="go">4</span>
+</code></pre></div>
+<p><code>delay()</code> 是我们喜爱的 <code>apply_async()</code> 快捷方式，接受星号参数：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">4</span>
+</code></pre></div>
+<p><code>apply_async()</code> 接受与 <code>app.Task.apply_async()</code> 方法相同的参数：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span><span class="o">.</span><span class="n">apply_async</span><span class="p">()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">apply_async</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">countdown</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">signature</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">countdown</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">apply_async</span><span class="p">()</span>
+</code></pre></div>
+</li>
+<li>
+<p>您不能使用 <code>s()</code> 定义选项，但链式 <code>set()</code> 调用可以解决这个问题：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">countdown</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">proj.tasks.add(2, 2)</span>
+</code></pre></div>
+</li>
+</ul>
+<h3 id="_3">部分签名<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<p>使用签名，您可以在工作进程中执行任务：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">delay</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">countdown</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+<p>或者您可以在当前进程中直接调用它：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)()</span>
+<span class="go">4</span>
+</code></pre></div>
+<p>向 <code>apply_async</code>/<code>delay</code> 指定额外的参数、关键字参数或选项会创建部分签名：</p>
+<ul>
+<li>
+<p>添加的任何参数都将前置到签名中的参数之前：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">partial</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>          <span class="c1"># 不完整的签名</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">partial</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>            <span class="c1"># 4 + 2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">partial</span><span class="o">.</span><span class="n">apply_async</span><span class="p">((</span><span class="mi">4</span><span class="p">,))</span>   <span class="c1"># 相同</span>
+</code></pre></div>
+</li>
+<li>
+<p>添加的任何关键字参数将与签名中的关键字参数合并，新的关键字参数优先：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>                    <span class="c1"># -&gt; add(2, 2, debug=True)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;debug&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>  <span class="c1"># 相同</span>
+</code></pre></div>
+</li>
+<li>
+<p>添加的任何选项将与签名中的选项合并，新的选项优先：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">signature</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">countdown</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">countdown</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># 倒计时现在是 1</span>
+</code></pre></div>
+</li>
+</ul>
+<p>您还可以克隆签名以创建衍生签名：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">proj.tasks.add(2)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;debug&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+<span class="go">proj.tasks.add(4, 2, debug=True)</span>
+</code></pre></div>
+<h3 id="_4">不可变性<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>部分签名旨在与回调一起使用，任何链接的任务或和弦回调都将使用父任务的结果来应用。有时您希望指定一个不接受额外参数的回调，在这种情况下，您可以将签名设置为不可变：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">apply_async</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">link</span><span class="o">=</span><span class="n">reset_buffers</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">immutable</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</code></pre></div>
+<p><code>.si()</code> 快捷方式也可以用于创建不可变签名：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">apply_async</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">link</span><span class="o">=</span><span class="n">reset_buffers</span><span class="o">.</span><span class="n">si</span><span class="p">())</span>
+</code></pre></div>
+<p>当签名不可变时，只能设置执行选项，因此无法使用部分参数/关键字参数调用签名。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>在本教程中，我有时使用前缀运算符 <code>~</code> 来操作签名。您可能不应该在生产代码中使用它，但在 Python shell 中进行实验时，它是一个方便的快捷方式：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="o">~</span><span class="n">sig</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 等同于</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">delay</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</code></pre></div>
+</div>
+<h3 id="_5">回调<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p>可以使用 <code>apply_async()</code> 的 <code>link</code> 参数将回调添加到任何任务：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="go">add.apply_async((2, 2), link=other_task.s())</span>
+</code></pre></div>
+<p>回调仅在任务成功退出时应用，并且将使用父任务的返回值作为参数来应用。</p>
+<p>正如我之前提到的，您添加到签名的任何参数都将前置到签名本身指定的参数之前！</p>
+<p>如果您有签名：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div>
+<p>那么 <code>sig.delay(result)</code> 变为：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+</code></pre></div>
+<p>...</p>
+<p>现在让我们使用部分参数调用我们的 <code>add()</code> 任务并添加回调：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">apply_async</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">link</span><span class="o">=</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">8</span><span class="p">))</span>
+</code></pre></div>
+<p>正如预期的那样，这将首先启动一个计算 <code>2 + 2</code> 的任务，然后启动另一个计算 <code>4 + 8</code> 的任务。</p>
+<h2 id="_6">原语<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+    <th>原语</th>
+    <th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>group</code></td>
+<td>group原语是一个签名，它接受一个任务列表，这些任务应该并行应用。</td>
+</tr>
+<tr>
+<td><code>chain</code></td>
+<td>chain原语允许我们将签名链接在一起，以便一个接一个地调用，本质上形成一个回调*链*。</td>
+</tr>
+<tr>
+<td><code>chord</code></td>
+<td>chord就像一个带有回调的group。一个chord由一个头部组和一个主体组成，其中主体是在头部所有任务完成后应该执行的任务。</td>
+</tr>
+<tr>
+<td><code>map</code></td>
+<td>
+map原语的工作方式类似于内置的 <code>map</code> 函数，但会创建一个临时任务，其中参数列表被应用到任务上。例如，<code>task.map([1, 2])</code> -- 导致调用单个任务，按顺序将参数应用到任务函数，结果是：
+
+<div class="language-python highlight"><pre><span></span><code><span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="n">task</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">task</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span>
+</code></pre></div>
+</td>
+</tr>
+<tr>
+<td><code>starmap</code></td>
+<td>
+工作方式与map完全相同，只是参数以 <code>*args</code> 的形式应用。
+例如 <code>add.starmap([(2, 2), (4, 4)])</code> 导致单个任务调用：
+
+<div class="language-python highlight"><pre><span></span><code><span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="n">add</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">add</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)]</span>
+</code></pre></div>
+</td>
+</tr>
+<tr>
+<td><code>chunks</code></td>
+<td>
+分块将长参数列表分成多个部分，例如操作：
+
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">items</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">))</span>  <span class="c1"># 1000个项目</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">chunks</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+</code></pre></div>
+
+将项目列表分成10个一组，产生100个任务（每个任务按顺序处理10个项目）。
+</td>
+</tr>
+</tbody>
+</table>
+
+<p>这些原语本身也是签名对象，因此它们可以以多种方式组合来构成复杂的工作流。</p>
+<p>以下是一些示例：</p>
+<ul>
+<li>
+<p>简单链</p>
+<p>这是一个简单的链，第一个任务执行并将其返回值传递给链中的下一个任务，依此类推。</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 2 + 2 + 4 + 8</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">chain</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">8</span><span class="p">))()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">16</span>
+</code></pre></div>
+<p>也可以使用管道符号编写：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">|</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">|</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">8</span><span class="p">))()</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">16</span>
+</code></pre></div>
+</li>
+<li>
+<p>不可变签名</p>
+<p>签名可以是部分的，因此可以向现有参数添加参数，但您可能并不总是需要这样，例如，如果您不想要链中前一个任务的结果。</p>
+<p>在这种情况下，您可以将签名标记为不可变，这样参数就不能被更改：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">signature</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">immutable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+<p>还有一个<code>.si()</code>快捷方式，这是创建签名的首选方式：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">si</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</code></pre></div>
+<p>现在您可以创建一个独立任务的链：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">si</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">|</span> <span class="n">add</span><span class="o">.</span><span class="n">si</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">|</span> <span class="n">add</span><span class="o">.</span><span class="n">si</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">16</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">8</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">4</span>
+</code></pre></div>
+</li>
+<li>
+<p>简单组</p>
+<p>您可以轻松创建一组并行执行的任务：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">group</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">[0, 2, 4, 6, 8, 10, 12, 14, 16, 18]</span>
+</code></pre></div>
+</li>
+<li>
+<p>简单和弦</p>
+<p>chord原语使我们能够添加一个回调，当组中的所有任务执行完成时调用。这对于那些不是<em>令人尴尬的并行</em>的算法通常是必需的：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">chord</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">chord</span><span class="p">((</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)),</span> <span class="n">tsum</span><span class="o">.</span><span class="n">s</span><span class="p">())()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">90</span>
+</code></pre></div>
+<p>上面的示例创建了10个并行启动的任务，当所有任务完成后，返回值被组合成一个列表并发送到<code>tsum</code>任务。</p>
+<p>chord的主体也可以是不可变的，这样组的返回值就不会传递给回调：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">chord</span><span class="p">((</span><span class="n">import_contact</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">contacts</span><span class="p">),</span> <span class="n">notify_complete</span><span class="o">.</span><span class="n">si</span><span class="p">(</span><span class="n">import_id</span><span class="p">))</span><span class="o">.</span><span class="n">apply_async</span><span class="p">()</span>
+</code></pre></div>
+<p>注意上面使用了<code>.si</code>；这会创建一个不可变签名，意味着传递的任何新参数（包括前一个任务的返回值）都将被忽略。</p>
+</li>
+<li>
+<p>通过组合让您大开眼界</p>
+<p>链也可以是部分的：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">c1</span> <span class="o">=</span> <span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">|</span> <span class="n">mul</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">8</span><span class="p">))</span>
+
+<span class="go"># (16 + 4) * 8</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">c1</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">160</span>
+</code></pre></div>
+<p>这意味着您可以组合链：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="go"># ((4 + 16) * 2 + 4) * 8</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c2</span> <span class="o">=</span> <span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span> <span class="o">|</span> <span class="n">mul</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">|</span> <span class="n">mul</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">8</span><span class="p">)))</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">c2</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">352</span>
+</code></pre></div>
+<p>将组与另一个任务链接在一起会自动将其升级为chord：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">c3</span> <span class="o">=</span> <span class="p">(</span><span class="n">group</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span> <span class="o">|</span> <span class="n">tsum</span><span class="o">.</span><span class="n">s</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">c3</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">90</span>
+</code></pre></div>
+<p>组和chord也接受部分参数，因此在链中，前一个任务的返回值会转发给组中的所有任务：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">new_user_workflow</span> <span class="o">=</span> <span class="p">(</span><span class="n">create_user</span><span class="o">.</span><span class="n">s</span><span class="p">()</span> <span class="o">|</span> <span class="n">group</span><span class="p">(</span><span class="n">import_contacts</span><span class="o">.</span><span class="n">s</span><span class="p">(),</span> <span class="n">send_welcome_email</span><span class="o">.</span><span class="n">s</span><span class="p">()))</span>
+<span class="gp">... </span><span class="n">new_user_workflow</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s1">&#39;artv&#39;</span><span class="p">,</span> <span class="n">first</span><span class="o">=</span><span class="s1">&#39;Art&#39;</span><span class="p">,</span> <span class="n">last</span><span class="o">=</span><span class="s1">&#39;Vandelay&#39;</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="s1">&#39;art@vandelay.com&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>如果您不想将参数转发给组，那么您可以使组中的签名不可变：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">|</span> <span class="n">group</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">si</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)))()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">[0, 2, 4, 6, 8, 10, 12, 14, 16, 18]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">8</span>
+</code></pre></div>
+</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>对于更复杂的工作流，已观察到默认的JSON序列化器由于递归引用而显著增加消息大小，导致资源问题。<em>pickle</em>序列化器不容易受到此问题的影响，因此在这样的情况下可能更可取。</p>
+</div>
+<h3 id="chains">Chains<a class="headerlink" href="#chains" title="Permanent link">&para;</a></h3>
+<p>任务可以链接在一起：当任务成功返回时调用链接的任务：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">apply_async</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">link</span><span class="o">=</span><span class="n">mul</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">4</span>
+</code></pre></div>
+<p>链接的任务将以其父任务的结果作为第一个参数应用。在上面的例子中，结果是4，这将导致 <code>mul(4, 16)</code>。</p>
+<p>结果将跟踪原始任务调用的任何子任务，这可以从结果实例中访问：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">children</span>
+<span class="go">[&lt;AsyncResult: 8c350acf-519d-4553-8a53-4ad3a5c5aeb4&gt;]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">64</span>
+</code></pre></div>
+<p>结果实例还有一个 <code>collect()</code> 方法，它将结果视为图，使您能够迭代结果：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">collect</span><span class="p">())</span>
+<span class="go">[(&lt;AsyncResult: 7b720856-dc5f-4415-9134-5c89def5664e&gt;, 4), (&lt;AsyncResult: 8c350acf-519d-4553-8a53-4ad3a5c5aeb4&gt;, 64)]</span>
+</code></pre></div>
+<p>默认情况下，如果图未完全形成（其中一个任务尚未完成），<code>collect()</code> 方法将引发 <code>IncompleteStream</code> 异常，但您也可以获取图的中间表示：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">result</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">intermediate</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="gp">...</span>
+</code></pre></div>
+<p>您可以根据需要链接任意多个任务，签名也可以链接：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">mul</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">log_result</span><span class="o">.</span><span class="n">s</span><span class="p">())</span>
+</code></pre></div>
+<p>您还可以使用 <code>on_error</code> 方法添加<em>错误回调</em>：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">on_error</span><span class="p">(</span><span class="n">log_error</span><span class="o">.</span><span class="n">s</span><span class="p">())</span><span class="o">.</span><span class="n">delay</span><span class="p">()</span>
+</code></pre></div>
+<p>当签名被应用时，这将导致以下 <code>.apply_async</code> 调用：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">apply_async</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">link_error</span><span class="o">=</span><span class="n">log_error</span><span class="o">.</span><span class="n">s</span><span class="p">())</span>
+</code></pre></div>
+<p>工作进程实际上不会将错误回调作为任务调用，而是直接调用错误回调函数，以便可以将原始请求、异常和回溯对象传递给它。</p>
+<p>以下是一个错误回调的示例：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">proj.celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">log_error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;/var/errors&#39;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p">),</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;--</span><span class="se">\n\n</span><span class="si">{0}</span><span class="s1"> </span><span class="si">{1}</span><span class="s1"> </span><span class="si">{2}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">traceback</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">fh</span><span class="p">)</span>
+</code></pre></div>
+<p>为了使链接任务更容易，有一个特殊的签名 <code>chain()</code> 可以让您将任务链接在一起：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">proj.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">add</span><span class="p">,</span> <span class="n">mul</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># (4 + 4) * 8 * 10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">chain</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">mul</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="n">mul</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+<span class="go">proj.tasks.add(4, 4) | proj.tasks.mul(8) | proj.tasks.mul(10)</span>
+</code></pre></div>
+<p>调用链将在当前进程中调用任务，并返回链中最后一个任务的结果：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">chain</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">mul</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="n">mul</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">10</span><span class="p">))()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">640</span>
+</code></pre></div>
+<p>它还设置 <code>parent</code> 属性，以便您可以沿着链向上工作以获取中间结果：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">64</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">8</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span>
+<span class="go">&lt;AsyncResult: eeaad925-6778-4ad1-88c8-b2a63d017933&gt;</span>
+</code></pre></div>
+<p>也可以使用 <code>|</code>（管道）运算符创建链：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">|</span> <span class="n">mul</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="o">|</span> <span class="n">mul</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span><span class="o">.</span><span class="n">apply_async</span><span class="p">()</span>
+</code></pre></div>
+<h4 id="idtask-id">任务 ID（Task ID）<a class="headerlink" href="#idtask-id" title="Permanent link">&para;</a></h4>
+<p>链将继承链中最后一个任务的任务ID。</p>
+<h4 id="graphs">图（Graphs）<a class="headerlink" href="#graphs" title="Permanent link">&para;</a></h4>
+<p>此外，您可以将结果图作为 <code>DependencyGraph</code> 来处理：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">chain</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">mul</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="n">mul</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">10</span><span class="p">))()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">graph</span>
+<span class="go">285fa253-fcf8-42ef-8b95-0078897e83e6(1)</span>
+<span class="go">    463afec2-5ed4-4036-b22d-ba067ec64f52(0)</span>
+<span class="go">872c3995-6fa0-46ca-98c2-5a19155afcf0(2)</span>
+<span class="go">    285fa253-fcf8-42ef-8b95-0078897e83e6(1)</span>
+<span class="go">        463afec2-5ed4-4036-b22d-ba067ec64f52(0)</span>
+</code></pre></div>
+<p>您甚至可以将这些图转换为<em>dot</em>格式：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;graph.dot&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">res</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">to_dot</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+</code></pre></div>
+<p>并创建图像：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">dot -Tpng graph.dot -o graph.png</span>
+</code></pre></div>
+<p><img alt="graph.png" loading="lazy" src="../../assets/result_graph.png" /></p>
+<h3 id="canvas-group">Groups<a class="headerlink" href="#canvas-group" title="Permanent link">&para;</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>与和弦类似，在组中使用的任务<em>不能</em>忽略其结果。。</p>
+</div>
+<p>组可以用于并行执行多个任务。</p>
+<p><code>group</code> 函数接受一个签名列表：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">group</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">proj.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">add</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">group</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="go">(proj.tasks.add(2, 2), proj.tasks.add(4, 4))</span>
+</code></pre></div>
+<p>如果您<strong>调用</strong>组，任务将在当前进程中依次应用，并返回一个 <code>GroupResult</code> 实例，可用于跟踪结果或了解有多少任务已准备就绪等：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">g</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">[4, 8]</span>
+</code></pre></div>
+<p>组也支持迭代器：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">group</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">))()</span>
+</code></pre></div>
+<p>组是一个签名对象，因此可以与其他签名结合使用。</p>
+<h4 id="_7">回调和错误处理<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h4>
+<p>组也可以链接回调和错误回调签名，但由于组不是真正的任务，只是将链接的任务传递给其封装的签名，因此行为可能有些令人惊讶。这意味着组的返回值不会被收集并传递给链接的回调签名。此外，链接任务<em>不</em>保证它仅在所有组任务完成后才激活。例如，以下使用简单 <code>add(a, b)</code> 任务的代码片段是有问题的，因为链接的 <code>add.s()</code> 签名不会像预期的那样接收最终的组结果。</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">g</span><span class="p">()</span>
+<span class="go">[4, 8]</span>
+</code></pre></div>
+<p>请注意，前两个任务的最终结果已返回，但回调签名将在后台运行并引发异常，因为它没有收到期望的两个参数。</p>
+<p>组错误回调也会传递给封装的签名，这可能导致仅链接一次的错误回调在组中多个任务失败时被多次调用。
+例如，以下使用引发异常的 <code>fail()</code> 任务的代码片段可以预期为组中运行的每个失败任务调用一次 <code>log_error()</code> 签名。</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">fail</span><span class="o">.</span><span class="n">s</span><span class="p">(),</span> <span class="n">fail</span><span class="o">.</span><span class="n">s</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">link_error</span><span class="p">(</span><span class="n">log_error</span><span class="o">.</span><span class="n">s</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">g</span><span class="p">()</span>
+</code></pre></div>
+<p>考虑到这一点，通常建议创建幂等或计数任务，这些任务能够容忍被重复调用以用作错误回调。</p>
+<p>这些用例更适合由 <code>chord</code> 类处理，该类在某些后端实现中受支持。</p>
+<h4 id="_8">结果<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h4>
+<p>组任务也返回一个特殊的结果，这个结果的工作方式类似于普通任务结果，
+只是它作用于整个组：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">group</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">add</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">job</span> <span class="o">=</span> <span class="n">group</span><span class="p">([</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">)])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">apply_async</span><span class="p">()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">ready</span><span class="p">()</span>  <span class="c1"># 所有子任务都完成了吗？</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">successful</span><span class="p">()</span> <span class="c1"># 所有子任务都成功了吗？</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">[4, 8, 16, 32, 64]</span>
+</code></pre></div>
+<p><code>GroupResult</code> 接受一个 <code>AsyncResult</code> 实例列表，并像操作单个任务一样操作它们。</p>
+<p>它支持以下操作：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>successful()</code></td>
+<td>如果所有子任务都成功完成（例如，没有引发异常），则返回 <code>True</code>。</td>
+</tr>
+<tr>
+<td><code>failed()</code></td>
+<td>如果有任何子任务失败，则返回 <code>True</code>。</td>
+</tr>
+<tr>
+<td><code>waiting()</code></td>
+<td>如果有任何子任务尚未就绪，则返回 <code>True</code>。</td>
+</tr>
+<tr>
+<td><code>ready()</code></td>
+<td>如果所有子任务都已就绪，则返回 <code>True</code>。</td>
+</tr>
+<tr>
+<td><code>completed_count()</code></td>
+<td>返回已完成的子任务数量。请注意，在此上下文中 <code>complete</code> 意味着 <code>successful</code>。换句话说，此方法的返回值是 <code>successful</code> 任务的数量。</td>
+</tr>
+<tr>
+<td><code>revoke()</code></td>
+<td>撤销所有子任务。</td>
+</tr>
+<tr>
+<td><code>join()</code></td>
+<td>收集所有子任务的结果，并按它们被调用的顺序返回（作为列表）。</td>
+</tr>
+</tbody>
+</table>
+<h4 id="_9">展开<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h4>
+<p>当链接时，包含单个签名的组将展开为单个签名。这意味着以下组可能会根据组中项目的数量向链传递结果列表或单个结果。</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">group</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">add</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">chain</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">group</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="go">add(2, 2) | add(1) | add(1)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">chain</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">group</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="go">add(2, 2) | %add((add(1), add(2)), 1)</span>
+</code></pre></div>
+<p>这意味着您应该小心，并确保 <code>add()</code> 任务可以接受列表或单个项目作为输入，如果您计划将其用作更大画布的一部分。</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>在 Celery 4.x 中，由于一个错误，下面的组不会展开为链，而是画布将升级为和弦。</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">group</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">add</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">chain</span><span class="p">(</span><span class="n">group</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+<span class="go">%add([add(1, 1)], 2)</span>
+</code></pre></div>
+<p>在 Celery 5.x 中，此错误已修复，组正确展开为单个签名。</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">group</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">add</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">chain</span><span class="p">(</span><span class="n">group</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+<span class="go">add(1, 1) | add(2)</span>
+</code></pre></div>
+</div>
+<h3 id="chords">Chords<a class="headerlink" href="#chords" title="Permanent link">&para;</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>在 chord 中使用的任务<em>不能</em>忽略它们的结果。如果在你的 chord 中<em>任何</em>任务（header 或 body）的结果后端被禁用。Chords 目前不支持 RPC 结果后端。</p>
+</div>
+<p>Chord 是一个只有在组中所有任务都执行完成后才会执行的任务。</p>
+<p>让我们计算表达式 <code>1 + 1 + 2 + 2 + 3 + 3 ... n + n</code> 到一百位数字的和。</p>
+<p>首先你需要两个任务，<code>add()</code> 和 <code>tsum()</code>（<code>sum()</code> 已经是一个标准函数）：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">tsum</span><span class="p">(</span><span class="n">numbers</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span>
+</code></pre></div>
+<p>现在你可以使用 chord 来并行计算每个加法步骤，然后得到结果数字的总和：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">chord</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">add</span><span class="p">,</span> <span class="n">tsum</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">chord</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">))(</span><span class="n">tsum</span><span class="o">.</span><span class="n">s</span><span class="p">())</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">9900</span>
+</code></pre></div>
+<p>这显然是一个非常人为的例子，消息传递和同步的开销使得这比其 Python 对应版本慢很多：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="nb">sum</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+</code></pre></div>
+<p>同步步骤成本很高，所以你应该尽可能避免使用 chords。尽管如此，chord 仍然是工具箱中一个强大的原语，因为同步是许多并行算法所需的步骤。</p>
+<p>让我们分解 chord 表达式：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">callback</span> <span class="o">=</span> <span class="n">tsum</span><span class="o">.</span><span class="n">s</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">header</span> <span class="o">=</span> <span class="p">[</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">chord</span><span class="p">(</span><span class="n">header</span><span class="p">)(</span><span class="n">callback</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">9900</span>
+</code></pre></div>
+<p>记住，回调只能在 header 中的所有任务都返回后才能执行。header 中的每个步骤都作为一个任务执行，并行地，可能在不同的节点上。然后使用 header 中每个任务的返回值来应用回调。<code>chord()</code> 返回的任务 id 是回调的 id，所以你可以等待它完成并获取最终的返回值。</p>
+<h4 id="_10">错误处理<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h4>
+<p>那么如果其中一个任务引发异常会发生什么？</p>
+<p>Chord 回调结果将转换到失败状态，错误被设置为 <code>ChordError</code> 异常：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">chord</span><span class="p">([</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">raising_task</span><span class="o">.</span><span class="n">s</span><span class="p">(),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">c</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</code></pre></div>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+  File <span class="nb">&quot;*/celery/result.py&quot;</span>, line <span class="m">120</span>, in <span class="n">get</span>
+<span class="w">    </span><span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">)</span>
+  File <span class="nb">&quot;*/celery/backends/amqp.py&quot;</span>, line <span class="m">150</span>, in <span class="n">wait_for</span>
+<span class="w">    </span><span class="k">raise</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">]</span>
+<span class="gr">celery.exceptions.ChordError</span>: <span class="n">Dependency 97de6f3f-ea67-4517-a21c-d867c61fcb47</span>
+<span class="x">    raised ValueError(&#39;something something&#39;,)</span>
+</code></pre></div>
+<p>虽然跟踪回溯可能因使用的结果后端而异，但你可以看到错误描述包括失败任务的 id 和原始异常的字符串表示。你也可以在 <code>result.traceback</code> 中找到原始跟踪回溯。</p>
+<p>请注意，其余任务仍将执行，所以第三个任务（<code>add.s(8, 8)</code>）即使中间任务失败也会执行。此外，<code>ChordError</code> 只显示首先（按时间）失败的任务：它不尊重 header 组的顺序。</p>
+<p>因此，要在 chord 失败时执行操作，你可以将 errback 附加到 chord 回调：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_chord_error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Task </span><span class="si">{0!r}</span><span class="s1"> raised error: </span><span class="si">{1!r}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">exc</span><span class="p">))</span>
+</code></pre></div>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="p">(</span><span class="n">group</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span> <span class="o">|</span> <span class="n">tsum</span><span class="o">.</span><span class="n">s</span><span class="p">()</span><span class="o">.</span><span class="n">on_error</span><span class="p">(</span><span class="n">on_chord_error</span><span class="o">.</span><span class="n">s</span><span class="p">()))</span><span class="o">.</span><span class="n">delay</span><span class="p">()</span>
+</code></pre></div>
+<p>Chords 可以有回调（callback）和错误回调（errback）签名链接到它们，这解决了将签名链接到组的一些问题。这样做会将提供的签名链接到 chord 的 body，期望在 body 完成时优雅地调用回调一次，或者在 chord header 或 body 中的任何任务失败时调用错误回调一次。</p>
+<p>这种行为可以通过使用 <a href="../configuration/#task_allow_error_cb_on_chord_header">task_allow_error_cb_on_chord_header</a> 标志来操作，以允许对 chord header 进行错误处理。启用此标志将导致 chord header 调用 body 的错误回调（默认行为）<em>以及</em> chord header 中任何失败的任务。</p>
+<h4 id="_11">重要注意事项<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h4>
+<p>在 chord 中使用的任务<em>不能</em>忽略它们的结果。实际上这意味着你必须启用 <code>result_backend</code> 才能使用 chords。此外，如果在你的配置中 <code>task_ignore_result</code> 设置为 <code>True</code>，请确保要在 chord 中使用的各个任务都定义为 <code>ignore_result=False</code>。这适用于 Task 子类和装饰的任务。</p>
+<p>Task 子类示例：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MyTask</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
+    <span class="n">ignore_result</span> <span class="o">=</span> <span class="kc">False</span>
+</code></pre></div>
+<p>装饰任务示例：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">ignore_result</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">another_task</span><span class="p">(</span><span class="n">project</span><span class="p">):</span>
+    <span class="n">do_something</span><span class="p">()</span>
+</code></pre></div>
+<p>默认情况下，同步步骤是通过让一个循环任务每秒轮询组的完成情况，在准备好时调用签名来实现的。</p>
+<p>示例实现：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery</span><span class="w"> </span><span class="kn">import</span> <span class="n">maybe_signature</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">unlock_chord</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_retries</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">ready</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">maybe_signature</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">join</span><span class="p">())</span>
+    <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry</span><span class="p">(</span><span class="n">countdown</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span> <span class="n">max_retries</span><span class="o">=</span><span class="n">max_retries</span><span class="p">)</span>
+</code></pre></div>
+<p>这被除 Redis、Memcached 和 DynamoDB 之外的所有结果后端使用：它们在 header 中的每个任务之后递增一个计数器，然后在计数器超过集合中的任务数时应用回调。</p>
+<p>Redis、Memcached 和 DynamoDB 的方法是一个更好的解决方案，但不容易在其他后端中实现（欢迎建议！）。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Chords 在 Redis 2.2 版本之前不能正常工作；你需要升级到至少 redis-server 2.2 才能使用它们。</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>如果你使用 Redis 结果后端和 chords，并且还重写了 <code>Task.after_return()</code> 方法，你需要确保调用 super 方法，否则 chord 回调将不会被应用。</p>
+<div class="language-python highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">after_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">do_something</span><span class="p">()</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">after_return</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<h3 id="map-starmap">Map &amp; Starmap<a class="headerlink" href="#map-starmap" title="Permanent link">&para;</a></h3>
+<p><code>map</code> 和 <code>starmap</code> 是内置任务，它们为序列中的每个元素调用提供的调用任务。</p>
+<p>它们与 <code>group</code> 的不同之处在于：</p>
+<ul>
+<li>只发送一个任务消息</li>
+<li>操作是顺序执行的</li>
+</ul>
+<p>例如使用 <code>map</code>：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">proj.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">add</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="o">~</span><span class="n">tsum</span><span class="o">.</span><span class="n">map</span><span class="p">([</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">))])</span>
+<span class="go">[45, 4950]</span>
+</code></pre></div>
+<p>等同于有一个任务执行：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">temp</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">tsum</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)),</span> <span class="n">tsum</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">))]</span>
+</code></pre></div>
+<p>使用 <code>starmap</code>：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="o">~</span><span class="n">add</span><span class="o">.</span><span class="n">starmap</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)))</span>
+<span class="go">[0, 2, 4, 6, 8, 10, 12, 14, 16, 18]</span>
+</code></pre></div>
+<p>等同于有一个任务执行：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">temp</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
+</code></pre></div>
+<p><code>map</code> 和 <code>starmap</code> 都是签名对象，因此可以像其他签名一样使用，并可以在组等中组合使用，例如在10秒后调用starmap：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">starmap</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)))</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">countdown</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="chunks">Chunks<a class="headerlink" href="#chunks" title="Permanent link">&para;</a></h3>
+<p>分块允许您将可迭代的工作分成多个部分，这样如果您有一百万个对象，您可以创建10个任务，每个任务处理十万个对象。</p>
+<p>有些人可能担心对任务进行分块会导致并行性降低，但对于繁忙的集群来说，这种情况很少发生，并且在实践中，由于您避免了消息传递的开销，它可能会显著提高性能。</p>
+<p>要创建分块的签名，您可以使用 <code>chunks()</code>：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">chunks</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)),</span> <span class="mi">10</span><span class="p">)</span>
+</code></pre></div>
+<p>与 <code>group</code> 类似，当调用时，发送分块消息的操作将在当前进程中发生：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">proj.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">add</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">chunks</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)),</span> <span class="mi">10</span><span class="p">)()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="go">[[0, 2, 4, 6, 8, 10, 12, 14, 16, 18],</span>
+<span class="go"> [20, 22, 24, 26, 28, 30, 32, 34, 36, 38],</span>
+<span class="go"> [40, 42, 44, 46, 48, 50, 52, 54, 56, 58],</span>
+<span class="go"> [60, 62, 64, 66, 68, 70, 72, 74, 76, 78],</span>
+<span class="go"> [80, 82, 84, 86, 88, 90, 92, 94, 96, 98],</span>
+<span class="go"> [100, 102, 104, 106, 108, 110, 112, 114, 116, 118],</span>
+<span class="go"> [120, 122, 124, 126, 128, 130, 132, 134, 136, 138],</span>
+<span class="go"> [140, 142, 144, 146, 148, 150, 152, 154, 156, 158],</span>
+<span class="go"> [160, 162, 164, 166, 168, 170, 172, 174, 176, 178],</span>
+<span class="go"> [180, 182, 184, 186, 188, 190, 192, 194, 196, 198]]</span>
+</code></pre></div>
+<p>而调用 <code>.apply_async</code> 将创建一个专用任务，以便各个任务在工作者中应用：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">add</span><span class="o">.</span><span class="n">chunks</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)),</span> <span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">apply_async</span><span class="p">()</span>
+</code></pre></div>
+<p>您还可以将分块转换为组：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">group</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">chunks</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)),</span> <span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>
+</code></pre></div>
+<p>并使用组将每个任务的倒计时按增量为一进行偏移：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">group</span><span class="o">.</span><span class="n">skew</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">10</span><span class="p">)()</span>
+</code></pre></div>
+<p>这意味着第一个任务的倒计时为一秒，第二个任务的倒计时为两秒，依此类推。</p>
+<h2 id="_12">标记<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<p>Stamping API 的目标是为签名及其组件提供标记能力，以便于调试信息的目的。例如，当画布（canvas）是一个复杂结构时，可能需要标记已形成结构的部分或全部元素。当嵌套组展开或链元素被替换时，复杂性会进一步增加。在这种情况下，可能需要了解某个元素属于哪个组或处于什么嵌套级别。这需要一个遍历画布元素并用特定元数据标记它们的机制。标记 API 基于访问者模式（Visitor pattern）实现这一功能。</p>
+<p>例如，</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">sig1</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">si</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig1_res</span> <span class="o">=</span> <span class="n">sig1</span><span class="o">.</span><span class="n">freeze</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">sig1</span><span class="p">,</span> <span class="n">add</span><span class="o">.</span><span class="n">si</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">stamp</span><span class="p">(</span><span class="n">stamp</span><span class="o">=</span><span class="s1">&#39;your_custom_stamp&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">apply_async</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
+<span class="go">[4, 6]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig1_res</span><span class="o">.</span><span class="n">_get_task_meta</span><span class="p">()[</span><span class="s1">&#39;stamp&#39;</span><span class="p">]</span>
+<span class="go">[&#39;your_custom_stamp&#39;]</span>
+</code></pre></div>
+<p>将初始化一个组 <code>g</code> 并用标记 <code>your_custom_stamp</code> 标记其组件。</p>
+<p>为了使此功能有用，您需要将 <code>result_extended</code> 配置选项设置为 <code>True</code> 或指令 <code>result_extended = True</code>。</p>
+<h3 id="_13">画布标记<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<p>我们还可以使用自定义标记逻辑来标记画布，使用访问者类 <code>StampingVisitor</code> 作为自定义标记访问者的基类。</p>
+<h3 id="_14">自定义标记<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
+<p>如果需要更复杂的标记逻辑，可以基于访问者模式实现自定义标记行为。
+实现此自定义逻辑的类必须继承 <code>StampingVisitor</code> 并实现适当的方法。</p>
+<p>例如，以下示例 <code>InGroupVisitor</code> 将通过标签 <code>in_group</code> 标记位于某个组内的任务。</p>
+<div class="language-python highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">InGroupVisitor</span><span class="p">(</span><span class="n">StampingVisitor</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_group</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_group_start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="o">**</span><span class="n">headers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_group</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;in_group&quot;</span><span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">in_group</span><span class="p">],</span> <span class="s2">&quot;stamped_headers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;in_group&quot;</span><span class="p">]}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_group_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="o">**</span><span class="n">headers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_group</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_chain_start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chain</span><span class="p">,</span> <span class="o">**</span><span class="n">headers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;in_group&quot;</span><span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">in_group</span><span class="p">],</span> <span class="s2">&quot;stamped_headers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;in_group&quot;</span><span class="p">]}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="o">**</span><span class="n">headers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;in_group&quot;</span><span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">in_group</span><span class="p">],</span> <span class="s2">&quot;stamped_headers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;in_group&quot;</span><span class="p">]}</span>
+</code></pre></div>
+<p>以下示例展示了另一个自定义标记访问者，它为所有任务标记一个自定义的 <code>monitoring_id</code>，该 ID 可以代表外部监控系统的 UUID 值，通过包含此 ID 的访问者实现来跟踪任务执行。这个 <code>monitoring_id</code> 可以是一个随机生成的 UUID，或者是外部监控系统使用的 span id 的唯一标识符等。</p>
+<div class="language-python highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MonitoringIdStampingVisitor</span><span class="p">(</span><span class="n">StampingVisitor</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="o">**</span><span class="n">headers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;monitoring_id&#39;</span><span class="p">:</span> <span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">}</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p><code>on_signature()</code>（或任何其他访问者方法）返回的字典中的 <code>stamped_headers</code> 键是<strong>可选的</strong>：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="c1"># 方法 1：不使用 stamped_headers - 所有键都被视为标记</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="o">**</span><span class="n">headers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;monitoring_id&#39;</span><span class="p">:</span> <span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">}</span>  <span class="c1"># monitoring_id 成为标记</span>
+
+<span class="c1"># 方法 2：使用 stamped_headers - 只有列出的键是标记</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="o">**</span><span class="n">headers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;monitoring_id&#39;</span><span class="p">:</span> <span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">,</span>      <span class="c1"># 这将是一个标记</span>
+        <span class="s1">&#39;other_data&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span>             <span class="c1"># 这将不是标记</span>
+        <span class="s1">&#39;stamped_headers&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;monitoring_id&#39;</span><span class="p">]</span>  <span class="c1"># 只有 monitoring_id 被标记</span>
+    <span class="p">}</span>
+</code></pre></div>
+<p>如果未指定 <code>stamped_headers</code> 键，标记访问者将假定返回字典中的所有键都是标记头。</p>
+</div>
+<p>接下来，让我们看看如何使用 <code>MonitoringIdStampingVisitor</code> 示例标记访问者。</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">sig_example</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="s1">&#39;t1&#39;</span><span class="p">)</span>
+<span class="n">sig_example</span><span class="o">.</span><span class="n">stamp</span><span class="p">(</span><span class="n">visitor</span><span class="o">=</span><span class="n">MonitoringIdStampingVisitor</span><span class="p">())</span>
+
+<span class="n">group_example</span> <span class="o">=</span> <span class="n">group</span><span class="p">([</span><span class="n">signature</span><span class="p">(</span><span class="s1">&#39;t1&#39;</span><span class="p">),</span> <span class="n">signature</span><span class="p">(</span><span class="s1">&#39;t2&#39;</span><span class="p">)])</span>
+<span class="n">group_example</span><span class="o">.</span><span class="n">stamp</span><span class="p">(</span><span class="n">visitor</span><span class="o">=</span><span class="n">MonitoringIdStampingVisitor</span><span class="p">())</span>
+
+<span class="n">chord_example</span> <span class="o">=</span> <span class="n">chord</span><span class="p">([</span><span class="n">signature</span><span class="p">(</span><span class="s1">&#39;t1&#39;</span><span class="p">),</span> <span class="n">signature</span><span class="p">(</span><span class="s1">&#39;t2&#39;</span><span class="p">)],</span> <span class="n">signature</span><span class="p">(</span><span class="s1">&#39;t3&#39;</span><span class="p">))</span>
+<span class="n">chord_example</span><span class="o">.</span><span class="n">stamp</span><span class="p">(</span><span class="n">visitor</span><span class="o">=</span><span class="n">MonitoringIdStampingVisitor</span><span class="p">())</span>
+
+<span class="n">chain_example</span> <span class="o">=</span> <span class="n">chain</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="s1">&#39;t1&#39;</span><span class="p">),</span> <span class="n">group</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="s1">&#39;t2&#39;</span><span class="p">),</span> <span class="n">signature</span><span class="p">(</span><span class="s1">&#39;t3&#39;</span><span class="p">)),</span> <span class="n">signature</span><span class="p">(</span><span class="s1">&#39;t4&#39;</span><span class="p">))</span>
+<span class="n">chain_example</span><span class="o">.</span><span class="n">stamp</span><span class="p">(</span><span class="n">visitor</span><span class="o">=</span><span class="n">MonitoringIdStampingVisitor</span><span class="p">())</span>
+</code></pre></div>
+<p>最后，需要说明的是，上述示例中的每个监控 ID 标记在任务之间都是不同的。</p>
+<h3 id="_15">回调标记<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
+<p>标记 API 还支持隐式标记回调。这意味着当回调添加到任务时，标记访问者也会应用于回调。</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>回调必须在标记之前链接到签名。</p>
+</div>
+<p>例如，让我们检查以下使用隐式方法的自定义标记访问者，其中所有返回的字典键都会自动被视为标记头，而无需显式指定 <code>stamped_headers</code>。</p>
+<div class="language-python highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CustomStampingVisitor</span><span class="p">(</span><span class="n">StampingVisitor</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="o">**</span><span class="n">headers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="c1"># &#39;header&#39; 将自动被视为标记头</span>
+        <span class="c1"># 无需指定 &#39;stamped_headers&#39;: [&#39;header&#39;]</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="o">**</span><span class="n">header</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="c1"># &#39;on_callback&#39; 将自动被视为标记头</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;on_callback&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_errback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">errback</span><span class="p">,</span> <span class="o">**</span><span class="n">header</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="c1"># &#39;on_errback&#39; 将自动被视为标记头</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;on_errback&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+</code></pre></div>
+<p>此自定义标记访问者将用 <code>{'header': 'value'}</code> 标记签名、回调和错误回调，并分别用 <code>{'on_callback': True}</code> 和 <code>{'on_errback': True}</code> 标记回调和错误回调，如下所示。</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">c</span> <span class="o">=</span> <span class="n">chord</span><span class="p">([</span><span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">add</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)],</span> <span class="n">xsum</span><span class="o">.</span><span class="n">s</span><span class="p">())</span>
+<span class="n">callback</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="s1">&#39;sig_link&#39;</span><span class="p">)</span>
+<span class="n">errback</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="s1">&#39;sig_link_error&#39;</span><span class="p">)</span>
+<span class="n">c</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>
+<span class="n">c</span><span class="o">.</span><span class="n">link_error</span><span class="p">(</span><span class="n">errback</span><span class="p">)</span>
+<span class="n">c</span><span class="o">.</span><span class="n">stamp</span><span class="p">(</span><span class="n">visitor</span><span class="o">=</span><span class="n">CustomStampingVisitor</span><span class="p">())</span>
+</code></pre></div>
+<p>此示例将产生以下标记：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">options</span>
+<span class="go">{&#39;header&#39;: &#39;value&#39;, &#39;stamped_headers&#39;: [&#39;header&#39;]}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">options</span>
+<span class="go">{&#39;header&#39;: &#39;value&#39;, &#39;stamped_headers&#39;: [&#39;header&#39;]}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">options</span>
+<span class="go">{&#39;header&#39;: &#39;value&#39;, &#39;stamped_headers&#39;: [&#39;header&#39;]}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">options</span>
+<span class="go">{&#39;header&#39;: &#39;value&#39;, &#39;stamped_headers&#39;: [&#39;header&#39;]}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;link&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">options</span>
+<span class="go">{&#39;header&#39;: &#39;value&#39;, &#39;on_callback&#39;: True, &#39;stamped_headers&#39;: [&#39;header&#39;, &#39;on_callback&#39;]}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;link_error&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">options</span>
+<span class="go">{&#39;header&#39;: &#39;value&#39;, &#39;on_errback&#39;: True, &#39;stamped_headers&#39;: [&#39;header&#39;, &#39;on_errback&#39;]}</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../calling/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 调用">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                调用
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../workers/" class="md-footer__link md-footer__link--next" aria-label="下一页: 工作进程">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                工作进程
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      译者 <a href="https://github.com/oaixnah" target="_blank">oaixnah</a>
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.tabs.link","navigation.instant","navigation.instant.prefetch","navigation.instant.progress","navigation.indexes","navigation.top","navigation.footer","navigation.tabs","navigation.expand","navigation.tracking","search.suggest","search.highlight","search.share","toc.follow"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"已复制","clipboard.copy":"复制","search.result.more.one":"在该页上还有 1 个符合条件的结果","search.result.more.other":"在该页上还有 # 个符合条件的结果","search.result.none":"没有找到符合条件的结果","search.result.one":"找到 1 个符合条件的结果","search.result.other":"# 个符合条件的结果","search.result.placeholder":"键入以开始搜索","search.result.term.missing":"缺少","select.version":"选择当前版本"},"version":null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.00c35305.min.js"></script>
+      
+    
+  </body>
+</html>

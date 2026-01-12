@@ -1,0 +1,3540 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Celery工作进程完整指南：启动、停止、重启、并发控制、远程管理、任务撤销、时间限制、速率限制、自动扩展等详细配置与操作说明。">
+      
+      
+        <meta name="author" content="oaixnah">
+      
+      
+        <link rel="canonical" href="https://celery.oaix.tech/user-guide/workers/">
+      
+      
+        <link rel="prev" href="../canvas/">
+      
+      
+        <link rel="next" href="../daemonizing/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.ico">
+      <meta name="generator" content="zensical-0.0.15">
+    
+    
+      
+        <title>工作进程 - Celery 中文文档</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.f1b6466b.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+  
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+  
+  <style>:root{}</style>
+
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="Celery 中文文档" class="md-header__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+      
+  <img src="../../assets/celery_128.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Celery 中文文档
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              工作进程
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="查找">
+  <button type="button" class="md-search__button">
+    查找
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/celery/celery" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    celery/celery
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/introduction/" class="md-tabs__link">
+          
+  
+  快速入门
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../application/" class="md-tabs__link">
+          
+  
+  用户指南
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../django/" class="md-tabs__link">
+        
+  
+  Django
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../faq/" class="md-tabs__link">
+        
+  
+  QA
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Celery 中文文档" class="md-nav__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+      
+  <img src="../../assets/celery_128.png" alt="logo">
+
+    </a>
+    Celery 中文文档
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/celery/celery" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    celery/celery
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速入门
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    快速入门
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    介绍
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/backends-and-brokers/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后端与代理
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    后端与代理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/redis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/rabbitmq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RabbitMQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/sqs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SQS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/kafka/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kafka
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/gcpubsub/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Google Pub/Sub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/first-steps-with-celery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速上手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后续步骤
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    用户指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    用户指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../application/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    应用程序
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../calling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../canvas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    画布
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工作进程
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工作进程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        启动 worker
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worker-stopping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        停止 worker 进程
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="停止 worker 进程">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        工作进程关闭
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="工作进程关闭">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#warm-shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        暖关闭（Warm Shutdown）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker-cold-shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        冷关闭（Cold Shutdown）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker-soft-shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        软关闭（Soft Shutdown）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hard-shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        硬关闭（Hard Shutdown）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worker_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        重启 worker 进程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        连接丢失时自动重连到代理
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        进程信号
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        文件路径中的变量
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="文件路径中的变量">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        节点名称替换
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        预分叉池进程索引
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worker-concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        并发性
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        远程控制
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="远程控制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#broadcast" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        broadcast 函数
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        命令
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="命令">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#revoke" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        revoke：撤销任务
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        撤销多个任务
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        持久化撤销
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#revoke_by_stamped_headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        revoke_by_stamped_headers：通过标记头撤销任务
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        通过标记头撤销多个任务
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#time-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        时间限制
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="时间限制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        运行时更改时间限制
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        速率限制
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="速率限制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        运行时更改速率限制
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#max-tasks-per-child" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        每个子进程最大任务数设置
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        每个子进程的最大内存设置
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        自动扩展
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        队列
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="队列">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        添加消费者
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        取消消费者
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        活动队列列表
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        检查工作进程
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="检查工作进程">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        已注册任务的转储
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        当前执行任务的转储
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        已调度（ETA）任务的转储
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        保留任务的转储
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker-statistics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        统计信息
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        附加命令
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="附加命令">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        远程关机
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        启用/禁用事件
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        编写你自己的远程控制命令
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../daemonizing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    守护进程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../periodic-tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    周期性任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../routing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    路由任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    监控与管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安全
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../optimizing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_13" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../concurrency/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    并发
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_13" id="__nav_3_13_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    并发
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concurrency/eventlet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eventlet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concurrency/gevent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gevent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../signals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    信号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extending/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    扩展
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    配置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../django/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Django
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        启动 worker
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worker-stopping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        停止 worker 进程
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="停止 worker 进程">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        工作进程关闭
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="工作进程关闭">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#warm-shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        暖关闭（Warm Shutdown）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker-cold-shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        冷关闭（Cold Shutdown）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker-soft-shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        软关闭（Soft Shutdown）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hard-shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        硬关闭（Hard Shutdown）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worker_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        重启 worker 进程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        连接丢失时自动重连到代理
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        进程信号
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        文件路径中的变量
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="文件路径中的变量">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        节点名称替换
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        预分叉池进程索引
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worker-concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        并发性
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        远程控制
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="远程控制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#broadcast" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        broadcast 函数
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        命令
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="命令">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#revoke" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        revoke：撤销任务
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        撤销多个任务
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        持久化撤销
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#revoke_by_stamped_headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        revoke_by_stamped_headers：通过标记头撤销任务
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        通过标记头撤销多个任务
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#time-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        时间限制
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="时间限制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        运行时更改时间限制
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        速率限制
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="速率限制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        运行时更改速率限制
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#max-tasks-per-child" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        每个子进程最大任务数设置
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        每个子进程的最大内存设置
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        自动扩展
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        队列
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="队列">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        添加消费者
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        取消消费者
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        活动队列列表
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        检查工作进程
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="检查工作进程">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        已注册任务的转储
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        当前执行任务的转储
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        已调度（ETA）任务的转储
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        保留任务的转储
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker-statistics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        统计信息
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        附加命令
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="附加命令">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        远程关机
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        启用/禁用事件
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        编写你自己的远程控制命令
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+  
+
+
+<h1 id="_1">工作进程<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h2 id="worker">启动 worker<a class="headerlink" href="#worker" title="Permanent link">&para;</a></h2>
+<div class="admonition tip inline end">
+<p class="admonition-title">守护进程化</p>
+<p>你可能希望使用守护进程化工具来在后台启动工作者。有关使用流行的服务管理器将工作者作为守护进程启动的帮助，请参阅 <a href="../daemonizing/" target="_blank">守护进程指南</a>。</p>
+</div>
+<p>你可以通过执行以下命令在前台启动工作者：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj worker -l INFO</span>
+</code></pre></div>
+<p>有关可用命令行选项的完整列表，请参阅 <code>celery.bin.worker</code>，或者简单地执行：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery worker --help</span>
+</code></pre></div>
+<p>你可以在同一台机器上启动多个工作者，但
+请确保通过使用 <code>celery worker --hostname</code> 参数指定节点名称来命名每个单独的工作者：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj worker --loglevel=INFO --concurrency=10 -n worker1@%h</span>
+<span class="go">celery -A proj worker --loglevel=INFO --concurrency=10 -n worker2@%h</span>
+<span class="go">celery -A proj worker --loglevel=INFO --concurrency=10 -n worker3@%h</span>
+</code></pre></div>
+<p><code>hostname</code> 参数可以展开以下变量：</p>
+<ul>
+<li><code>%h</code>: 主机名，包括域名。</li>
+<li><code>%n</code>: 仅主机名。</li>
+<li><code>%d</code>: 仅域名。</li>
+</ul>
+<p>如果当前主机名是 <em>george.example.com</em>，这些变量将展开为：</p>
+<table>
+<thead>
+<tr>
+<th>变量</th>
+<th>模板</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>%h</code></td>
+<td><code>worker1@%h</code></td>
+<td><em>worker1@george.example.com</em></td>
+</tr>
+<tr>
+<td><code>%n</code></td>
+<td><code>worker1@%n</code></td>
+<td><em>worker1@george</em></td>
+</tr>
+<tr>
+<td><code>%d</code></td>
+<td><code>worker1@%d</code></td>
+<td><em>worker1@example.com</em></td>
+</tr>
+</tbody>
+</table>
+<h2 id="worker-stopping">停止 worker 进程<a class="headerlink" href="#worker-stopping" title="Permanent link">&para;</a></h2>
+<p>关闭应该使用 <code>TERM</code> 信号来完成。</p>
+<p>当关闭启动时，工作进程将在实际终止之前完成所有当前正在执行的任务。如果这些任务很重要，您应该等待它完成，然后再采取任何激进的措施，比如发送 <code>KILL</code> 信号。</p>
+<p>如果工作进程在合理的时间内无法关闭，例如因为陷入无限循环或类似情况，您可以使用 <code>KILL</code> 信号来强制终止工作进程：但请注意，当前正在执行的任务将会丢失（即，除非任务设置了 <code>acks_late</code> 选项）。</p>
+<p>此外，由于进程无法覆盖 <code>KILL</code> 信号，工作进程将无法回收其子进程；请确保手动执行此操作。以下命令通常可以解决问题：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">pkill -9 -f &#39;celery worker&#39;</span>
+</code></pre></div>
+<p>如果您的系统没有 <code>pkill</code> 命令，可以使用稍长一些的版本：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">ps auxww | awk &#39;/celery worker/ {print $2}&#39; | xargs kill -9</span>
+</code></pre></div>
+<h3 id="_2">工作进程关闭<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<p>我们将使用术语<em>暖关闭、软关闭、冷关闭、硬关闭</em>来描述工作进程关闭的不同阶段。当工作进程接收到 <code>TERM</code> 或 <code>QUIT</code> 信号时，它将启动关闭过程。<code>INT</code> (Ctrl-C) 信号在关闭过程中也会被处理，并且总是触发关闭过程的下一阶段。</p>
+<h4 id="warm-shutdown">暖关闭（Warm Shutdown）<a class="headerlink" href="#warm-shutdown" title="Permanent link">&para;</a></h4>
+<p>当工作进程接收到 <code>TERM</code> 信号时，它将启动暖关闭。工作进程将在实际终止之前完成所有当前正在执行的任务。工作进程第一次接收到 <code>INT</code> (Ctrl-C) 信号时，也会启动暖关闭。</p>
+<p>暖关闭将停止调用 <code>celery.worker.worker.WorkController.start()</code> 并调用 <code>celery.worker.worker.WorkController.stop()</code>。</p>
+<ul>
+<li>在暖关闭过程中，额外的 <code>TERM</code> 信号将被忽略。</li>
+<li>下一个 <code>INT</code> 信号将触发关闭过程的下一阶段。</li>
+</ul>
+<h4 id="worker-cold-shutdown">冷关闭（Cold Shutdown）<a class="headerlink" href="#worker-cold-shutdown" title="Permanent link">&para;</a></h4>
+<p>当工作进程接收到 <code>QUIT</code> 信号时，将启动冷关闭。工作进程将停止所有当前正在执行的任务并立即终止。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>如果环境变量 <code>REMAP_SIGTERM</code> 设置为 <code>SIGQUIT</code>，工作进程在接收到 <code>TERM</code> 信号时也会启动冷关闭，而不是暖关闭。</p>
+</div>
+<p>冷关闭将停止调用 <code>celery.worker.worker.WorkController.start()</code> 并调用 <code>celery.worker.worker.WorkController.terminate()</code>。</p>
+<p>如果暖关闭已经启动，向冷关闭的过渡将运行一个信号处理程序 <code>on_cold_shutdown</code> 来取消主进程中所有当前正在执行的任务，并可能触发 软关闭。</p>
+<h4 id="worker-soft-shutdown">软关闭（Soft Shutdown）<a class="headerlink" href="#worker-soft-shutdown" title="Permanent link">&para;</a></h4>
+<p>软关闭是一种有时间限制的暖关闭，在冷关闭之前启动。工作进程将允许 <code>worker_soft_shutdown_timeout</code> 秒的时间让所有当前正在执行的任务完成，然后终止。如果达到时间限制，工作进程将启动冷关闭并取消所有当前正在执行的任务。如果在软关闭期间接收到 <code>QUIT</code> 信号，工作进程将取消所有当前正在执行的任务，但仍会等待时间限制结束才终止，这给了工作进程一个更优雅地执行冷关闭的机会。</p>
+<p>软关闭默认是禁用的，以保持与 冷关闭 行为的向后兼容性。要启用软关闭，请将 <code>worker_soft_shutdown_timeout</code> 设置为一个正浮点数值。如果没有任务在运行，软关闭将被跳过。要强制软关闭，<em>同时</em>启用 <code>worker_enable_soft_shutdown_on_idle</code> 设置。</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>如果工作进程没有运行任何任务但保留了 ETA 任务，除非启用了 <code>worker_enable_soft_shutdown_on_idle</code> 设置，否则不会启动软关闭，这可能导致在冷关闭期间丢失任务。在使用 ETA 任务时，建议启用空闲时的软关闭。尝试不同的 :setting:<code>worker_soft_shutdown_timeout</code> 值，找到最适合您设置的配置，以将任务丢失的风险降到最低。</p>
+</div>
+<p>例如，当设置 <code>worker_soft_shutdown_timeout=3</code> 时，工作进程将允许 3 秒的时间让所有当前正在执行的任务完成，然后终止。如果达到时间限制，工作进程将启动冷关闭并取消所有当前正在执行的任务。</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">[INFO/MainProcess] Task myapp.long_running_task[6f748357-b2c7-456a-95de-f05c00504042] received</span>
+<span class="go">[WARNING/ForkPoolWorker-8] long_running_task is running, sleeping 1/2000s</span>
+<span class="go">[WARNING/ForkPoolWorker-8] long_running_task is running, sleeping 2/2000s</span>
+<span class="go">[WARNING/ForkPoolWorker-8] long_running_task is running, sleeping 3/2000s</span>
+<span class="go">^C</span>
+<span class="go">worker: Hitting Ctrl+C again will initiate cold shutdown, terminating all running tasks!</span>
+
+<span class="go">worker: Warm shutdown (MainProcess)</span>
+<span class="go">[WARNING/ForkPoolWorker-8] long_running_task is running, sleeping 4/2000s</span>
+<span class="go">[WARNING/ForkPoolWorker-8] long_running_task is running, sleeping 5/2000s</span>
+<span class="go">[WARNING/ForkPoolWorker-8] long_running_task is running, sleeping 6/2000s</span>
+<span class="go">^C</span>
+<span class="go">worker: Hitting Ctrl+C again will terminate all running tasks!</span>
+<span class="go">[WARNING/MainProcess] Initiating Soft Shutdown, terminating in 3 seconds</span>
+<span class="go">[WARNING/ForkPoolWorker-8] long_running_task is running, sleeping 7/2000s</span>
+<span class="go">[WARNING/ForkPoolWorker-8] long_running_task is running, sleeping 8/2000s</span>
+<span class="go">[WARNING/ForkPoolWorker-8] long_running_task is running, sleeping 9/2000s</span>
+<span class="go">[WARNING/MainProcess] Restoring 1 unacknowledged message(s)</span>
+</code></pre></div>
+<ul>
+<li>下一个 <code>QUIT</code> 信号将取消软关闭中仍在运行的任务，但工作进程仍会等待时间限制结束才终止。</li>
+<li>下一个（第 2 个）<code>QUIT</code> 或 <code>INT</code> 信号将触发关闭过程的下一阶段。</li>
+</ul>
+<h4 id="hard-shutdown">硬关闭（Hard Shutdown）<a class="headerlink" href="#hard-shutdown" title="Permanent link">&para;</a></h4>
+<p>硬关闭主要用于本地或调试目的，允许连续发送 <code>INT</code> (Ctrl-C) 信号来强制工作进程立即终止。工作进程将停止所有当前正在执行的任务，并通过在主进程中引发 <code>WorkerTerminate</code> 异常来立即终止。</p>
+<p>例如，注意下面日志中的 <code>^C</code>（使用 <code>INT</code> 信号在不同阶段之间移动）：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">[INFO/MainProcess] Task myapp.long_running_task[7235ac16-543d-4fd5-a9e1-2d2bb8ab630a] received</span>
+<span class="go">[WARNING/ForkPoolWorker-8] long_running_task is running, sleeping 1/2000s</span>
+<span class="go">[WARNING/ForkPoolWorker-8] long_running_task is running, sleeping 2/2000s</span>
+<span class="go">^C</span>
+<span class="go">worker: Hitting Ctrl+C again will initiate cold shutdown, terminating all running tasks!</span>
+
+<span class="go">worker: Warm shutdown (MainProcess)</span>
+<span class="go">[WARNING/ForkPoolWorker-8] long_running_task is running, sleeping 3/2000s</span>
+<span class="go">[WARNING/ForkPoolWorker-8] long_running_task is running, sleeping 4/2000s</span>
+<span class="go">^C</span>
+<span class="go">worker: Hitting Ctrl+C again will terminate all running tasks!</span>
+<span class="go">[WARNING/MainProcess] Initiating Soft Shutdown, terminating in 10 seconds</span>
+<span class="go">[WARNING/ForkPoolWorker-8] long_running_task is running, sleeping 5/2000s</span>
+<span class="go">[WARNING/ForkPoolWorker-8] long_running_task is running, sleeping 6/2000s</span>
+<span class="go">^C</span>
+<span class="go">Waiting gracefully for cold shutdown to complete...</span>
+
+<span class="go">worker: Cold shutdown (MainProcess)</span>
+<span class="go">^C[WARNING/MainProcess] Restoring 1 unacknowledged message(s)</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>日志 <code>Restoring 1 unacknowledged message(s)</code> 具有误导性，因为在硬关闭后不能保证消息会被恢复。暖关闭 允许在暖关闭和冷关闭之间添加一个时间窗口，从而提高关闭过程的优雅性。</p>
+</div>
+<h2 id="worker_1">重启 worker 进程<a class="headerlink" href="#worker_1" title="Permanent link">&para;</a></h2>
+<p>要重启工作进程，您应该发送 <code>TERM</code> 信号并启动一个新的实例。在开发环境中管理工作进程最简单的方法是使用 <code>celery multi</code>：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery multi start 1 -A proj -l INFO -c4 --pidfile=/var/run/celery/%n.pid</span>
+<span class="go">celery multi restart 1 --pidfile=/var/run/celery/%n.pid</span>
+</code></pre></div>
+<p>对于生产部署，您应该使用初始化脚本或进程监控系统（参见 <a href="../daemonizing/" target="_blank">守护进程指南</a>）。</p>
+<p>除了停止然后启动工作进程来重启之外，您也可以使用 <code>HUP</code> 信号来重启工作进程。请注意，工作进程将负责自行重启，因此这种方法容易出现问题，不建议在生产环境中使用：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">kill -HUP $pid</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>通过 <code>HUP</code> 重启仅在工作进程作为守护进程在后台运行时有效（它没有控制终端）。</p>
+<p><code>HUP</code> 在 macOS 上被禁用，因为该平台存在限制。</p>
+</div>
+<h2 id="_3">连接丢失时自动重连到代理<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>除非 <code>broker_connection_retry_on_startup</code> 设置为 False，Celery 将在第一次连接丢失后自动重试重新连接到代理。<code>broker_connection_retry</code> 控制是否自动重试重新连接到代理以进行后续重连。</p>
+<p>如果 <code>worker_cancel_long_running_tasks_on_connection_loss</code> 设置为 True，Celery 还将取消当前正在运行的任何长时间运行的任务。</p>
+<p>由于消息代理不跟踪在连接丢失之前已经获取了多少任务，Celery 将通过当前正在运行的任务数量乘以 <code>worker_prefetch_multiplier</code> 来减少预取计数。预取计数将在每次连接丢失前正在运行的任务完成后逐渐恢复到允许的最大值。</p>
+<p>此功能默认启用，但可以通过将 False 设置为 <code>worker_enable_prefetch_count_reduction</code> 来禁用。</p>
+<h2 id="_4">进程信号<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>工作进程的主进程重写了以下信号：</p>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TERM</code></td>
+<td>温和关闭，等待任务完成。</td>
+</tr>
+<tr>
+<td><code>QUIT</code></td>
+<td>强制关闭，尽快终止</td>
+</tr>
+<tr>
+<td><code>USR1</code></td>
+<td>转储所有活动线程的堆栈跟踪。</td>
+</tr>
+<tr>
+<td><code>USR2</code></td>
+<td>远程调试，参见 <code>celery.contrib.rdb</code>。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_5">文件路径中的变量<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p><code>--logfile &lt;celery worker --logfile&gt;</code>、<code>--pidfile &lt;celery worker --pidfile&gt;</code> 和 <code>--statedb &lt;celery worker --statedb&gt;</code> 的文件路径参数可以包含变量，工作进程会展开这些变量：</p>
+<h3 id="_6">节点名称替换<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>%p</code>: 完整节点名称</li>
+<li><code>%h</code>: 主机名，包括域名</li>
+<li><code>%n</code>: 仅主机名</li>
+<li><code>%d</code>: 仅域名</li>
+<li><code>%i</code>: 预分叉池进程索引，如果是主进程则为 0</li>
+<li><code>%I</code>: 带分隔符的预分叉池进程索引</li>
+</ul>
+<p>例如，如果当前主机名是 <code>george@foo.example.com</code>，那么这些变量会展开为：</p>
+<ul>
+<li><code>--logfile=%p.log</code> -&gt; <code>george@foo.example.com.log</code></li>
+<li><code>--logfile=%h.log</code> -&gt; <code>foo.example.com.log</code></li>
+<li><code>--logfile=%n.log</code> -&gt; <code>george.log</code></li>
+<li><code>--logfile=%d.log</code> -&gt; <code>example.com.log</code></li>
+</ul>
+<h3 id="_7">预分叉池进程索引<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<p>预分叉池进程索引说明符会根据最终需要打开文件的进程展开为不同的文件名。</p>
+<p>这可以用于为每个子进程指定一个日志文件。</p>
+<p>请注意，即使进程退出或使用了自动缩放/<code>maxtasksperchild</code>/时间限制，
+数字也会保持在进程限制范围内。也就是说，这个数字是<em>进程索引</em>，
+而不是进程计数或进程ID。</p>
+<ul>
+<li>
+<p><code>%i</code> - 池进程索引，如果是主进程则为 0</p>
+<p>其中 <code>-n worker1@example.com -c2 -f %n-%i.log</code> 会产生三个日志文件：</p>
+<ul>
+<li><code>worker1-0.log</code> (主进程)</li>
+<li><code>worker1-1.log</code> (池进程 1)</li>
+<li><code>worker1-2.log</code> (池进程 2)</li>
+</ul>
+</li>
+<li>
+<p><code>%I</code> - 带分隔符的池进程索引</p>
+<p>其中 <code>-n worker1@example.com -c2 -f %n%I.log</code> 会产生三个日志文件：</p>
+<ul>
+<li><code>worker1.log</code> (主进程)</li>
+<li><code>worker1-1.log</code> (池进程 1)</li>
+<li><code>worker1-2.log</code> (池进程 2)</li>
+</ul>
+</li>
+</ul>
+<h2 id="worker-concurrency">并发性<a class="headerlink" href="#worker-concurrency" title="Permanent link">&para;</a></h2>
+<p>默认情况下使用多进程来执行任务的并发执行，但你也可以使用 <a href="../concurrency/eventlet/" target="_blank">Eventlet</a>。工作进程/线程的数量可以使用 <code>celery worker --concurrency</code> 参数进行更改，默认值为机器上可用的CPU数量。</p>
+<div class="admonition info">
+<p class="admonition-title">进程数量（多进程/prefork池）</p>
+<p>更多的池进程通常更好，但存在一个临界点，超过这个点添加更多的池进程会对性能产生负面影响。甚至有证据表明，运行多个工作实例可能比单个工作实例性能更好。例如，3个工作实例，每个有10个池进程。你需要进行实验来找到最适合你的数字，因为这取决于应用程序、工作负载、任务运行时间和其他因素。</p>
+</div>
+<h2 id="_8">远程控制<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<div class="admonition tip inline end">
+<p class="admonition-title"><code>celery</code> 命令</p>
+<p><code>celery</code> 程序用于从命令行执行远程控制命令。它支持下面列出的所有命令。</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>支持</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pool</td>
+<td><em>prefork, eventlet, gevent, thread</em>, blocking:<em>solo</em> (参见注释)</td>
+</tr>
+<tr>
+<td>broker</td>
+<td><em>amqp, redis</em></td>
+</tr>
+</tbody>
+</table>
+<p>工作器具有使用高优先级广播消息队列进行远程控制的能力。命令可以定向到所有工作器，或特定的工作器列表。</p>
+<p>命令也可以有回复。客户端可以等待并收集这些回复。由于没有中央机构知道集群中有多少工作器可用，也无法估计有多少工作器可能发送回复，因此客户端有一个可配置的超时时间——回复到达的截止时间（以秒为单位）。此超时时间默认为一秒。如果工作器在截止时间内没有回复，并不一定意味着工作器没有回复，或者更糟的是已经死亡，而可能只是由网络延迟或工作器处理命令速度较慢引起的，因此请相应地调整超时时间。</p>
+<p>除了超时时间，客户端还可以指定等待的最大回复数。如果指定了目标，此限制将设置为目标主机的数量。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>solo</code> 池支持远程控制命令，但任何正在执行的任务都会阻塞任何等待的控制命令，因此如果工作器非常繁忙，其用途有限。在那种情况下，您必须增加客户端等待回复的超时时间。</p>
+</div>
+<h3 id="broadcast"><code>broadcast</code> 函数<a class="headerlink" href="#broadcast" title="Permanent link">&para;</a></h3>
+<p>这是用于向工作器发送命令的客户端函数。一些远程控制命令也有使用 <code>broadcast()</code> 在后台的更高级接口，例如 <code>rate_limit()</code> 和 <code>ping()</code>。</p>
+<p>发送 <code>rate_limit()</code> 命令和关键字参数：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="s1">&#39;rate_limit&#39;</span><span class="p">,</span> <span class="n">arguments</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;task_name&#39;</span><span class="p">:</span> <span class="s1">&#39;myapp.mytask&#39;</span><span class="p">,</span> <span class="s1">&#39;rate_limit&#39;</span><span class="p">:</span> <span class="s1">&#39;200/m&#39;</span><span class="p">})</span>
+</code></pre></div>
+<p>这将异步发送命令，无需等待回复。要请求回复，您必须使用 <code>reply</code> 参数：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="s1">&#39;rate_limit&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;task_name&#39;</span><span class="p">:</span> <span class="s1">&#39;myapp.mytask&#39;</span><span class="p">,</span> <span class="s1">&#39;rate_limit&#39;</span><span class="p">:</span> <span class="s1">&#39;200/m&#39;</span><span class="p">},</span> <span class="n">reply</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">[{&#39;worker1.example.com&#39;: &#39;New rate limit set successfully&#39;},</span>
+<span class="go"> {&#39;worker2.example.com&#39;: &#39;New rate limit set successfully&#39;},</span>
+<span class="go"> {&#39;worker3.example.com&#39;: &#39;New rate limit set successfully&#39;}]</span>
+</code></pre></div>
+<p>使用 <code>destination</code> 参数，您可以指定要接收命令的工作器列表：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="s1">&#39;rate_limit&#39;</span><span class="p">,</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">&#39;task_name&#39;</span><span class="p">:</span> <span class="s1">&#39;myapp.mytask&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;rate_limit&#39;</span><span class="p">:</span> <span class="s1">&#39;200/m&#39;</span><span class="p">},</span> <span class="n">reply</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>                            <span class="n">destination</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;worker1@example.com&#39;</span><span class="p">])</span>
+<span class="go">[{&#39;worker1.example.com&#39;: &#39;New rate limit set successfully&#39;}]</span>
+</code></pre></div>
+<p>当然，使用更高级的接口来设置速率限制要方便得多，但有些命令只能通过 <code>broadcast()</code> 请求。</p>
+<h2 id="_9">命令<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<h3 id="revoke"><code>revoke</code>：撤销任务<a class="headerlink" href="#revoke" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>支持</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pool</td>
+<td>all, terminate only supported by prefork, eventlet and gevent</td>
+</tr>
+<tr>
+<td>broker</td>
+<td><em>amqp, redis</em></td>
+</tr>
+<tr>
+<td>command</td>
+<td><code>celery -A proj control revoke &lt;task_id&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p>所有工作节点都会在内存中保留已撤销任务ID的记录，可以是内存中或持久化到磁盘。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>内存中保留的已撤销任务的最大数量可以通过 <code>CELERY_WORKER_REVOKES_MAX</code> 环境变量指定，默认值为50000。当超过限制时，撤销将在10800秒（3小时）后过期。可以使用 <code>CELERY_WORKER_REVOKE_EXPIRES</code> 环境变量更改此值。</p>
+<p>成功任务的内存限制也可以通过 <code>CELERY_WORKER_SUCCESSFUL_MAX</code> 和 <code>CELERY_WORKER_SUCCESSFUL_EXPIRES</code> 环境变量设置，默认值分别为1000和10800。</p>
+</div>
+<p>当工作节点收到撤销请求时，它将跳过执行该任务，但不会终止已经在执行的任务，除非设置了 <code>terminate</code> 选项。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>terminate选项是管理员在任务卡住时的最后手段。它不是用于终止任务，而是用于终止执行任务的进程，并且该进程可能在发送信号时已经开始处理另一个任务，因此您绝不能以编程方式调用此功能。</p>
+</div>
+<p>如果设置了 <code>terminate</code>，处理任务的子进程将被终止。默认发送的信号是 <code>TERM</code>，但您可以使用 <code>signal</code> 参数指定。信号可以是Python标准库中 <code>signal</code> 模块定义的任何信号的大写名称。</p>
+<p>终止任务也会撤销它。</p>
+<p><strong>示例</strong></p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">revoke</span><span class="p">()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">AsyncResult</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">revoke</span><span class="p">()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">revoke</span><span class="p">(</span><span class="s1">&#39;d9078da5-9915-40a0-bfa1-392c7bde42ed&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">revoke</span><span class="p">(</span><span class="s1">&#39;d9078da5-9915-40a0-bfa1-392c7bde42ed&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="n">terminate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">revoke</span><span class="p">(</span><span class="s1">&#39;d9078da5-9915-40a0-bfa1-392c7bde42ed&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="n">terminate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">signal</span><span class="o">=</span><span class="s1">&#39;SIGKILL&#39;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="_10">撤销多个任务<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
+<p>revoke方法也接受列表参数，可以一次性撤销多个任务。</p>
+<p><strong>示例</strong></p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">revoke</span><span class="p">([</span>
+<span class="gp">... </span>   <span class="s1">&#39;7993b0aa-1f0b-4780-9af0-c47c0858b3f2&#39;</span><span class="p">,</span>
+<span class="gp">... </span>   <span class="s1">&#39;f565793e-b041-4b2b-9ca4-dca22762a55d&#39;</span><span class="p">,</span>
+<span class="gp">... </span>   <span class="s1">&#39;d9d35e03-2997-42d0-a13e-64a66b88a618&#39;</span><span class="p">,</span>
+<span class="go">])</span>
+</code></pre></div>
+<p>自版本3.1起，<code>GroupResult.revoke</code> 方法就利用了此功能。</p>
+<h3 id="_11">持久化撤销<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
+<p>撤销任务的工作原理是向所有工作节点发送广播消息，工作节点随后在内存中保留已撤销任务的列表。当工作节点启动时，它将与集群中的其他工作节点同步已撤销的任务。</p>
+<p>已撤销任务的列表存储在内存中，因此如果所有工作节点都重启，已撤销ID的列表也会消失。如果要在重启之间保留此列表，需要使用 <code>--statedb</code> 参数指定一个文件来存储这些信息：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj worker -l INFO --statedb=/var/run/celery/worker.state</span>
+</code></pre></div>
+<p>或者如果使用 <code>celery multi</code>，您需要为每个工作节点实例创建一个文件，因此使用 <code>%n</code> 格式来扩展当前节点名称：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery multi start 2 -l INFO --statedb=/var/run/celery/%n.state</span>
+</code></pre></div>
+<p>请注意，撤销功能需要远程控制命令正常工作。目前仅RabbitMQ（amqp）和Redis支持远程控制命令。</p>
+<h3 id="revoke_by_stamped_headers"><code>revoke_by_stamped_headers</code>：通过标记头撤销任务<a class="headerlink" href="#revoke_by_stamped_headers" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>支持</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pool</td>
+<td>all, terminate only supported by prefork and eventlet</td>
+</tr>
+<tr>
+<td>broker</td>
+<td><em>amqp, redis</em></td>
+</tr>
+<tr>
+<td>command</td>
+<td><code>celery -A proj control revoke_by_stamped_headers &lt;header=value&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p>此命令类似于 <code>revoke()</code>，但不是指定任务ID，而是将标记头指定为键值对，每个具有与键值对匹配的标记头的任务都将被撤销。</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>已撤销头的映射在重启之间不是持久的，因此如果重启工作节点，已撤销的头将丢失，需要重新映射。</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>如果工作池并发性高且启用了terminate，此命令的性能可能较差，因为它必须迭代所有正在运行的任务来查找具有指定标记头的任务。</p>
+</div>
+<p><strong>示例</strong></p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">revoke_by_stamped_headers</span><span class="p">({</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">})</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">revoke_by_stamped_headers</span><span class="p">({</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">},</span> <span class="n">terminate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">revoke_by_stamped_headers</span><span class="p">({</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">},</span> <span class="n">terminate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">signal</span><span class="o">=</span><span class="s1">&#39;SIGKILL&#39;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="_12">通过标记头撤销多个任务<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<p><code>revoke_by_stamped_headers</code> 方法也接受列表参数，可以通过多个头或多个值进行撤销。</p>
+<p><strong>示例</strong></p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="go">&gt;&gt; app.control.revoke_by_stamped_headers({</span>
+<span class="go">...    &#39;header_A&#39;: &#39;value_1&#39;,</span>
+<span class="go">...    &#39;header_B&#39;: [&#39;value_2&#39;, &#39;value_3&#39;],</span>
+<span class="go">})</span>
+</code></pre></div>
+<p>这将撤销所有具有标记头 <code>header_A</code> 且值为 <code>value_1</code> 的任务，以及所有具有标记头 <code>header_B</code> 且值为 <code>value_2</code> 或 <code>value_3</code> 的任务。</p>
+<p><strong>CLI 示例</strong></p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj control revoke_by_stamped_headers stamped_header_key_A=stamped_header_value_1 stamped_header_key_B=stamped_header_value_2</span>
+
+<span class="go">celery -A proj control revoke_by_stamped_headers stamped_header_key_A=stamped_header_value_1 stamped_header_key_B=stamped_header_value_2 --terminate</span>
+
+<span class="go">celery -A proj control revoke_by_stamped_headers stamped_header_key_A=stamped_header_value_1 stamped_header_key_B=stamped_header_value_2 --terminate --signal=SIGKILL</span>
+</code></pre></div>
+<h2 id="time-limits">时间限制<a class="headerlink" href="#time-limits" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>支持</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pool</td>
+<td><em>prefork/gevent (参见下面的注释)</em></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition question inline end">
+<p class="admonition-title">软限制还是硬限制？</p>
+<p>时间限制设置为两个值：<code>soft</code>（软限制）和<code>hard</code>（硬限制）。软时间限制允许任务捕获异常，在终止前进行清理：硬超时无法捕获，会强制终止任务。</p>
+</div>
+<p>单个任务可能永远运行，如果您有很多任务在等待永远不会发生的事件，您将无限期地阻止工作者处理新任务。防御这种情况发生的最佳方法是启用时间限制。</p>
+<p>时间限制（<code>--time-limit</code>）是任务在执行的进程被终止并由新进程替换之前可以运行的最大秒数。您还可以启用软时间限制（<code>--soft-time-limit</code>），这会在硬时间限制终止任务之前引发一个任务可以捕获的异常以进行清理：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">myapp</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">celery.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">SoftTimeLimitExceeded</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mytask</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">do_work</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">SoftTimeLimitExceeded</span><span class="p">:</span>
+        <span class="n">clean_up_in_a_hurry</span><span class="p">()</span>
+</code></pre></div>
+<p>时间限制也可以使用 <code>task_time_limit</code> / <code>task_soft_time_limit</code> 设置来配置。您还可以使用 <code>AsyncResult.get()</code> 函数的 <code>timeout</code> 参数为客户端操作指定时间限制。</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>时间限制目前在不支持 <code>SIGUSR1</code> 信号的平台上不起作用。</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>gevent 池不实现软时间限制。此外，如果任务正在阻塞，它不会强制执行硬时间限制。</p>
+</div>
+<h3 id="_13">运行时更改时间限制<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>支持</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>broker</td>
+<td><em>amqp, redis</em></td>
+</tr>
+</tbody>
+</table>
+<p>有一个远程控制命令可以让您更改任务的软硬时间限制——名为 <code>time_limit</code>。</p>
+<p>将 <code>tasks.crawl_the_web</code> 任务的时间限制更改为软限制一分钟，硬限制两分钟的示例：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">time_limit</span><span class="p">(</span><span class="s1">&#39;tasks.crawl_the_web&#39;</span><span class="p">,</span> <span class="n">soft</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">hard</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">reply</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">[{&#39;worker1.example.com&#39;: {&#39;ok&#39;: &#39;time limits set successfully&#39;}}]</span>
+</code></pre></div>
+<p>只有时间限制更改后开始执行的任务才会受到影响。</p>
+<h2 id="_14">速率限制<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
+<h3 id="_15">运行时更改速率限制<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
+<p>示例：将 <code>myapp.mytask</code> 任务的速率限制更改为每分钟最多执行200个该类型的任务：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">rate_limit</span><span class="p">(</span><span class="s1">&#39;myapp.mytask&#39;</span><span class="p">,</span> <span class="s1">&#39;200/m&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>上面的示例没有指定目标，因此更改请求将影响集群中的所有工作实例。如果您只想影响特定的工作器列表，可以包含 <code>destination</code> 参数：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">rate_limit</span><span class="p">(</span><span class="s1">&#39;myapp.mytask&#39;</span><span class="p">,</span> <span class="s1">&#39;200/m&#39;</span><span class="p">,</span> <span class="n">destination</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;celery@worker1.example.com&#39;</span><span class="p">])</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>这不会影响启用了 <code>worker_disable_rate_limits</code> 设置的工作器。</p>
+</div>
+<h2 id="max-tasks-per-child">每个子进程最大任务数设置<a class="headerlink" href="#max-tasks-per-child" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>支持</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pool</td>
+<td><em>prefork</em></td>
+</tr>
+</tbody>
+</table>
+<p>使用此选项，您可以配置工作进程在被新进程替换之前可以执行的最大任务数。</p>
+<p>这在您有无法控制的内存泄漏时非常有用，例如来自闭源C扩展的内存泄漏。</p>
+<p>该选项可以通过工作进程的 <code>celery worker --max-tasks-per-child</code> 参数或使用 <code>worker_max_tasks_per_child</code> 设置来配置。</p>
+<h2 id="_16">每个子进程的最大内存设置<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>支持</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pool</td>
+<td><em>prefork</em></td>
+</tr>
+</tbody>
+</table>
+<p>通过此选项，您可以配置工作进程在被新进程替换之前可以执行的最大驻留内存量。</p>
+<p>如果您有无法控制的内存泄漏（例如来自闭源C扩展），这将非常有用。</p>
+<p>该选项可以使用工作进程的 <code>celery worker --max-memory-per-child</code> 参数或使用 <code>worker_max_memory_per_child</code> 设置来配置。</p>
+<h2 id="_17">自动扩展<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>支持</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pool</td>
+<td><em>prefork</em>, <em>gevent</em></td>
+</tr>
+</tbody>
+</table>
+<p><em>autoscaler</em>（自动扩展器）组件用于根据负载动态调整池的大小：</p>
+<ul>
+<li>当有工作需要处理时，自动扩展器会添加更多的池进程；当工作负载较低时，开始移除进程。</li>
+</ul>
+<p>通过 <code>celery worker --autoscale</code> 选项启用自动扩展功能，该选项需要两个数字：池进程的最大和最小数量：</p>
+<div class="language-text highlight"><pre><span></span><code>--autoscale=AUTOSCALE
+     Enable autoscaling by providing
+     max_concurrency,min_concurrency.  Example:
+       --autoscale=10,3 (always keep 3 processes, but grow to
+      10 if necessary).
+</code></pre></div>
+<p>您也可以通过继承 <code>celery.worker.autoscale.Autoscaler</code> 类来为自动扩展器定义自己的规则。一些指标的想法包括平均负载或可用内存量。您可以使用 <code>worker_autoscaler</code> 设置来指定自定义的自动扩展器。</p>
+<h2 id="_18">队列<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h2>
+<p>一个工作实例可以从任意数量的队列中消费消息。默认情况下，它将消费在 <code>task_queues</code> 设置中定义的所有队列（如果未指定，则回退到名为 <code>celery</code> 的默认队列）。</p>
+<p>您可以在启动时通过向 <code>celery worker -Q</code> 选项提供逗号分隔的队列列表来指定要从哪些队列消费：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj worker -l INFO -Q foo,bar,baz</span>
+</code></pre></div>
+<p>如果队列名称在 <code>task_queues</code> 中定义，它将使用该配置，但如果未在队列列表中定义，Celery 将自动为您生成一个新队列（取决于 <code>task_create_missing_queues</code> 选项）。</p>
+<p>您还可以使用远程控制命令 <code>add_consumer</code> 和 <code>cancel_consumer</code> 在运行时告诉工作器开始和停止从队列消费。</p>
+<h3 id="_19">添加消费者<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h3>
+<p><code>add_consumer</code> 控制命令将告诉一个或多个工作器开始从队列消费消息。此操作是幂等的。</p>
+<p>要告诉集群中的所有工作器开始从名为 "<code>foo</code>" 的队列消费，您可以使用 <code>celery control</code> 程序：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj control add_consumer foo</span>
+<span class="go">-&gt; worker1.local: OK</span>
+<span class="go">    started consuming from u&#39;foo&#39;</span>
+</code></pre></div>
+<p>如果您想指定特定的工作器，可以使用 <code>celery control --destination</code> 参数：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj control add_consumer foo -d celery@worker1.local</span>
+</code></pre></div>
+<p>同样可以使用 <code>add_consumer()</code> 方法动态完成：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">add_consumer</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="n">reply</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">[{u&#39;worker1.local&#39;: {u&#39;ok&#39;: u&quot;already consuming from u&#39;foo&#39;&quot;}}]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">add_consumer</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="n">reply</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>                         <span class="n">destination</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;worker1@example.com&#39;</span><span class="p">])</span>
+<span class="go">[{u&#39;worker1.local&#39;: {u&#39;ok&#39;: u&quot;already consuming from u&#39;foo&#39;&quot;}}]</span>
+</code></pre></div>
+<p>到目前为止，我们只展示了使用自动队列的示例，如果您需要更多控制，还可以指定交换器、路由键甚至其他选项：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">add_consumer</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">queue</span><span class="o">=</span><span class="s1">&#39;baz&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;ex&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">exchange_type</span><span class="o">=</span><span class="s1">&#39;topic&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;media.*&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">options</span><span class="o">=</span><span class="p">{</span>
+<span class="gp">... </span>        <span class="s1">&#39;queue_durable&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;exchange_durable&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="p">},</span>
+<span class="gp">... </span>    <span class="n">reply</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">destination</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;w1@example.com&#39;</span><span class="p">,</span> <span class="s1">&#39;w2@example.com&#39;</span><span class="p">])</span>
+</code></pre></div>
+<h3 id="_20">取消消费者<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h3>
+<p>您可以使用 <code>cancel_consumer</code> 控制命令通过队列名称取消消费者。</p>
+<p>要强制集群中的所有工作器取消从队列消费，您可以使用 <code>celery control</code> 程序：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj control cancel_consumer foo</span>
+</code></pre></div>
+<p><code>celery control --destination</code> 参数可用于指定一个工作器或工作器列表来执行该命令：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj control cancel_consumer foo -d celery@worker1.local</span>
+</code></pre></div>
+<p>您也可以使用 <code>cancel_consumer()</code> 方法以编程方式取消消费者：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">cancel_consumer</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="n">reply</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">[{u&#39;worker1.local&#39;: {u&#39;ok&#39;: u&quot;no longer consuming from u&#39;foo&#39;&quot;}}]</span>
+</code></pre></div>
+<h3 id="_21">活动队列列表<a class="headerlink" href="#_21" title="Permanent link">&para;</a></h3>
+<p>您可以使用 <code>active_queues</code> 控制命令获取工作器正在消费的队列列表：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj inspect active_queues</span>
+<span class="go">[...]</span>
+</code></pre></div>
+<p>与所有其他远程控制命令一样，这也支持 <code>celery inspect --destination</code> 参数，用于指定应回复请求的工作器：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="gp">$ </span>celery<span class="w"> </span>-A<span class="w"> </span>proj<span class="w"> </span>inspect<span class="w"> </span>active_queues<span class="w"> </span>-d<span class="w"> </span>celery@worker1.local
+<span class="go">[...]</span>
+</code></pre></div>
+<p>这也可以通过使用 <code>active_queues()</code> 方法以编程方式完成：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">inspect</span><span class="p">()</span><span class="o">.</span><span class="n">active_queues</span><span class="p">()</span>
+<span class="go">[...]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">inspect</span><span class="p">([</span><span class="s1">&#39;worker1.local&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">active_queues</span><span class="p">()</span>
+<span class="go">[...]</span>
+</code></pre></div>
+<h2 id="_22">检查工作进程<a class="headerlink" href="#_22" title="Permanent link">&para;</a></h2>
+<p><code>inspect</code> 允许您检查正在运行的工作进程。它在底层使用远程控制命令。</p>
+<p>您也可以使用 <code>celery</code> 命令来检查工作进程，它支持与 <code>control</code> 接口相同的命令。</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="c1"># 检查所有节点。</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">i</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">inspect</span><span class="p">()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 指定多个节点进行检查。</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">i</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">inspect</span><span class="p">([</span><span class="s1">&#39;worker1.example.com&#39;</span><span class="p">,</span>
+<span class="go">                            &#39;worker2.example.com&#39;])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 指定单个节点进行检查。</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">i</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="s1">&#39;worker1.example.com&#39;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="_23">已注册任务的转储<a class="headerlink" href="#_23" title="Permanent link">&para;</a></h3>
+<p>您可以使用 <code>registered()</code> 获取工作进程中已注册任务的列表：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">i</span><span class="o">.</span><span class="n">registered</span><span class="p">()</span>
+<span class="go">[{&#39;worker1.example.com&#39;: [&#39;tasks.add&#39;, &#39;tasks.sleeptask&#39;]}]</span>
+</code></pre></div>
+<h3 id="_24">当前执行任务的转储<a class="headerlink" href="#_24" title="Permanent link">&para;</a></h3>
+<p>您可以使用 <code>active()</code> 获取活动任务的列表：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">i</span><span class="o">.</span><span class="n">active</span><span class="p">()</span>
+<span class="go">[{&#39;worker1.example.com&#39;:</span>
+<span class="go">    [{&#39;name&#39;: &#39;tasks.sleeptask&#39;,</span>
+<span class="go">      &#39;id&#39;: &#39;32666e9b-809c-41fa-8e93-5ae0c80afbbf&#39;,</span>
+<span class="go">      &#39;args&#39;: &#39;(8,)&#39;,</span>
+<span class="go">      &#39;kwargs&#39;: &#39;{}&#39;}]}]</span>
+</code></pre></div>
+<h3 id="eta">已调度（ETA）任务的转储<a class="headerlink" href="#eta" title="Permanent link">&para;</a></h3>
+<p>您可以使用 <code>scheduled()</code> 获取等待调度的任务列表：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">i</span><span class="o">.</span><span class="n">scheduled</span><span class="p">()</span>
+<span class="go">[{&#39;worker1.example.com&#39;:</span>
+<span class="go">    [{&#39;eta&#39;: &#39;2010-06-07 09:07:52&#39;, &#39;priority&#39;: 0,</span>
+<span class="go">      &#39;request&#39;: {</span>
+<span class="go">        &#39;name&#39;: &#39;tasks.sleeptask&#39;,</span>
+<span class="go">        &#39;id&#39;: &#39;1a7980ea-8b19-413e-91d2-0b74f3844c4d&#39;,</span>
+<span class="go">        &#39;args&#39;: &#39;[1]&#39;,</span>
+<span class="go">        &#39;kwargs&#39;: &#39;{}&#39;}},</span>
+<span class="go">     {&#39;eta&#39;: &#39;2010-06-07 09:07:53&#39;, &#39;priority&#39;: 0,</span>
+<span class="go">      &#39;request&#39;: {</span>
+<span class="go">        &#39;name&#39;: &#39;tasks.sleeptask&#39;,</span>
+<span class="go">        &#39;id&#39;: &#39;49661b9a-aa22-4120-94b7-9ee8031d219d&#39;,</span>
+<span class="go">        &#39;args&#39;: &#39;[2]&#39;,</span>
+<span class="go">         &#39;kwargs&#39;: &#39;{}&#39;}}]}]</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>这些是具有 ETA/倒计时参数的任务，不是周期性任务。</p>
+</div>
+<h3 id="_25">保留任务的转储<a class="headerlink" href="#_25" title="Permanent link">&para;</a></h3>
+<p>保留任务是已接收但仍在等待执行的任务。</p>
+<p>您可以使用 <code>reserved()</code> 获取这些任务的列表：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">i</span><span class="o">.</span><span class="n">reserved</span><span class="p">()</span>
+<span class="go">[{&#39;worker1.example.com&#39;:</span>
+<span class="go">    [{&#39;name&#39;: &#39;tasks.sleeptask&#39;,</span>
+<span class="go">      &#39;id&#39;: &#39;32666e9b-809c-41fa-8e93-5ae0c80afbbf&#39;,</span>
+<span class="go">      &#39;args&#39;: &#39;(8,)&#39;,</span>
+<span class="go">      &#39;kwargs&#39;: &#39;{}&#39;}]}]</span>
+</code></pre></div>
+<h3 id="worker-statistics">统计信息<a class="headerlink" href="#worker-statistics" title="Permanent link">&para;</a></h3>
+<p>远程控制命令 <code>inspect stats</code>（或 <code>stats()</code>）将为您提供有关工作进程的有用（或不太有用）统计信息的长列表：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj inspect stats</span>
+</code></pre></div>
+<p>有关输出详细信息，请查阅 <code>stats()</code> 的参考文档。</p>
+<h2 id="_26">附加命令<a class="headerlink" href="#_26" title="Permanent link">&para;</a></h2>
+<h3 id="_27">远程关机<a class="headerlink" href="#_27" title="Permanent link">&para;</a></h3>
+<p>此命令将优雅地远程关闭工作进程：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="s1">&#39;shutdown&#39;</span><span class="p">)</span> <span class="c1"># 关闭所有工作进程</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="s1">&#39;shutdown&#39;</span><span class="p">,</span> <span class="n">destination</span><span class="o">=</span><span class="s1">&#39;worker1@example.com&#39;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="ping">Ping<a class="headerlink" href="#ping" title="Permanent link">&para;</a></h3>
+<p>此命令向存活的工作进程请求 ping。工作进程回复字符串 'pong'，仅此而已。除非您指定自定义超时时间，否则它将使用默认的一秒超时时间：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">ping</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="go">[{&#39;worker1.example.com&#39;: &#39;pong&#39;},</span>
+<span class="go"> {&#39;worker2.example.com&#39;: &#39;pong&#39;},</span>
+<span class="go"> {&#39;worker3.example.com&#39;: &#39;pong&#39;}]</span>
+</code></pre></div>
+<p><code>ping()</code> 也支持 <code>destination</code> 参数，因此您可以指定要 ping 的工作进程：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">ping</span><span class="p">([</span><span class="s1">&#39;worker2.example.com&#39;</span><span class="p">,</span> <span class="s1">&#39;worker3.example.com&#39;</span><span class="p">])</span>
+<span class="go">[{&#39;worker2.example.com&#39;: &#39;pong&#39;},</span>
+<span class="go"> {&#39;worker3.example.com&#39;: &#39;pong&#39;}]</span>
+</code></pre></div>
+<h3 id="_28">启用/禁用事件<a class="headerlink" href="#_28" title="Permanent link">&para;</a></h3>
+<p>您可以使用 <code>enable_events</code>、<code>disable_events</code> 命令来启用/禁用事件。
+这对于使用 <code>celery events</code>/<code>celerymon</code> 临时监控工作进程很有用。</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">enable_events</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">control</span><span class="o">.</span><span class="n">disable_events</span><span class="p">()</span>
+</code></pre></div>
+<h2 id="_29">编写你自己的远程控制命令<a class="headerlink" href="#_29" title="Permanent link">&para;</a></h2>
+<p>有两种类型的远程控制命令：</p>
+<ul>
+<li>
+<p>检查命令（Inspect command）</p>
+<p>没有副作用，通常只是返回在worker中找到的一些值，比如当前注册的任务列表、活动任务列表等。</p>
+</li>
+<li>
+<p>控制命令（Control command）</p>
+<p>执行副作用操作，比如添加一个新的队列来消费。</p>
+</li>
+</ul>
+<p>远程控制命令在控制面板中注册，它们接受一个参数：当前的 <code>celery.worker.control.ControlDispatch</code>实例。从这里你可以访问活动的 <code>celery.worker.consumer.Consumer</code>（如果需要的话）。</p>
+<p>这是一个增加任务预取计数的控制命令示例：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery.worker.control</span><span class="w"> </span><span class="kn">import</span> <span class="n">control_command</span>
+
+<span class="nd">@control_command</span><span class="p">(</span>
+    <span class="n">args</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;n&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)],</span>
+    <span class="n">signature</span><span class="o">=</span><span class="s1">&#39;[N=1]&#39;</span><span class="p">,</span>  <span class="c1"># &lt;- 用于命令行帮助。</span>
+<span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">increase_prefetch_count</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">consumer</span><span class="o">.</span><span class="n">qos</span><span class="o">.</span><span class="n">increment_eventually</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;ok&#39;</span><span class="p">:</span> <span class="s1">&#39;prefetch count incremented&#39;</span><span class="p">}</span>
+</code></pre></div>
+<p>确保你将此代码添加到worker导入的模块中：这可以是定义Celery应用程序的同一个模块，或者你可以将该模块添加到 <code>imports</code> 设置中。</p>
+<p>重启worker以便控制命令被注册，现在你可以使用 <code>celery control</code> 实用程序调用你的命令：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj control increase_prefetch_count 3</span>
+</code></pre></div>
+<p>你也可以向:program:<code>celery inspect</code>程序添加操作，例如一个读取当前预取计数的操作：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">celery.worker.control</span><span class="w"> </span><span class="kn">import</span> <span class="n">inspect_command</span>
+
+<span class="nd">@inspect_command</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">current_prefetch_count</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;prefetch_count&#39;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">consumer</span><span class="o">.</span><span class="n">qos</span><span class="o">.</span><span class="n">value</span><span class="p">}</span>
+</code></pre></div>
+<p>重启worker后，你现在可以使用 <code>celery inspect</code> 程序查询这个值：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj inspect current_prefetch_count</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../canvas/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 画布">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                画布
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../daemonizing/" class="md-footer__link md-footer__link--next" aria-label="下一页: 守护进程">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                守护进程
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      译者 <a href="https://github.com/oaixnah" target="_blank">oaixnah</a>
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.tabs.link","navigation.instant","navigation.instant.prefetch","navigation.instant.progress","navigation.indexes","navigation.top","navigation.footer","navigation.tabs","navigation.expand","navigation.tracking","search.suggest","search.highlight","search.share","toc.follow"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"已复制","clipboard.copy":"复制","search.result.more.one":"在该页上还有 1 个符合条件的结果","search.result.more.other":"在该页上还有 # 个符合条件的结果","search.result.none":"没有找到符合条件的结果","search.result.one":"找到 1 个符合条件的结果","search.result.other":"# 个符合条件的结果","search.result.placeholder":"键入以开始搜索","search.result.term.missing":"缺少","select.version":"选择当前版本"},"version":null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.00c35305.min.js"></script>
+      
+    
+  </body>
+</html>

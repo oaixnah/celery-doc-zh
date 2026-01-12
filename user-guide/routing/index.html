@@ -1,0 +1,2670 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Celery任务路由指南：学习自动路由、手动路由、优先级设置和广播功能，掌握AMQP基础知识和队列配置技巧，实现高效的任务分发和管理。">
+      
+      
+        <meta name="author" content="oaixnah">
+      
+      
+        <link rel="canonical" href="https://celery.oaix.tech/user-guide/routing/">
+      
+      
+        <link rel="prev" href="../periodic-tasks/">
+      
+      
+        <link rel="next" href="../monitoring/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.ico">
+      <meta name="generator" content="zensical-0.0.15">
+    
+    
+      
+        <title>路由任务 - Celery 中文文档</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.f1b6466b.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+  
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+  
+  <style>:root{}</style>
+
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#routing-basics" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="Celery 中文文档" class="md-header__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+      
+  <img src="../../assets/celery_128.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Celery 中文文档
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              路由任务
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="查找">
+  <button type="button" class="md-search__button">
+    查找
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/celery/celery" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    celery/celery
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/introduction/" class="md-tabs__link">
+          
+  
+  快速入门
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../application/" class="md-tabs__link">
+          
+  
+  用户指南
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../django/" class="md-tabs__link">
+        
+  
+  Django
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../faq/" class="md-tabs__link">
+        
+  
+  QA
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Celery 中文文档" class="md-nav__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+      
+  <img src="../../assets/celery_128.png" alt="logo">
+
+    </a>
+    Celery 中文文档
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/celery/celery" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    celery/celery
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速入门
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    快速入门
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    介绍
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/backends-and-brokers/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后端与代理
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    后端与代理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/redis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/rabbitmq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RabbitMQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/sqs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SQS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/kafka/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kafka
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/gcpubsub/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Google Pub/Sub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/first-steps-with-celery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速上手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后续步骤
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    用户指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    用户指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../application/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    应用程序
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../calling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../canvas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    画布
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工作进程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../daemonizing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    守护进程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../periodic-tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    周期性任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    路由任务
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    路由任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        基础
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="基础">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#routing-automatic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        自动路由
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="自动路由">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        更改默认队列的名称
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        队列是如何定义的
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        手动路由
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        特殊路由选项
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="特殊路由选项">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rabbitmq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RabbitMQ 消息优先级
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis 消息优先级
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amqp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AMQP 基础
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AMQP 基础">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        消息
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        生产者、消费者和代理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        交换机、队列和路由键
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        交换机类型
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="交换机类型">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        直连交换机
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        主题交换机
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        相关API命令
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        动手实践API
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        路由任务
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="路由任务">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定义队列
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        指定任务目的地
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        路由器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        广播
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    监控与管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安全
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../optimizing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_13" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../concurrency/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    并发
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_13" id="__nav_3_13_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    并发
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concurrency/eventlet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eventlet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concurrency/gevent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gevent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../signals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    信号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extending/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    扩展
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    配置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../django/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Django
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        基础
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="基础">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#routing-automatic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        自动路由
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="自动路由">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        更改默认队列的名称
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        队列是如何定义的
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        手动路由
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        特殊路由选项
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="特殊路由选项">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rabbitmq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RabbitMQ 消息优先级
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis 消息优先级
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amqp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AMQP 基础
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AMQP 基础">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        消息
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        生产者、消费者和代理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        交换机、队列和路由键
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        交换机类型
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="交换机类型">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        直连交换机
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        主题交换机
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        相关API命令
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        动手实践API
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        路由任务
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="路由任务">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定义队列
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        指定任务目的地
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        路由器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        广播
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+  
+
+
+<h1 id="routing-basics">路由任务<a class="headerlink" href="#routing-basics" title="Permanent link">&para;</a></h1>
+<h2 id="_1">基础<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<h3 id="routing-automatic">自动路由<a class="headerlink" href="#routing-automatic" title="Permanent link">&para;</a></h3>
+<p>最简单的路由方式是使用 <code>task_create_missing_queues</code> 设置（默认启用）。</p>
+<p>启用此设置后，未在 <code>task_queues</code> 中定义的命名队列将自动创建。这使得执行简单的路由任务变得容易。</p>
+<p>假设您有两个服务器 <code>x</code> 和 <code>y</code> 处理常规任务，还有一个服务器 <code>z</code> 仅处理与 feed 相关的任务。您可以使用以下配置::</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">task_routes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;feed.tasks.import_feed&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="s1">&#39;feeds&#39;</span><span class="p">}}</span>
+</code></pre></div>
+<p>启用此路由后，导入 feed 任务将被路由到 <code>"feeds"</code> 队列，而所有其他任务将被路由到默认队列（出于历史原因命名为 <code>"celery"</code>）。</p>
+<p>或者，您可以使用 glob 模式匹配，甚至正则表达式来匹配 <code>feed.tasks</code> 命名空间中的所有任务：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_routes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;feed.tasks.*&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="s1">&#39;feeds&#39;</span><span class="p">}}</span>
+</code></pre></div>
+<p>如果匹配模式的顺序很重要，您应该改用 <em>items</em> 格式指定路由器：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">task_routes</span> <span class="o">=</span> <span class="p">([</span>
+    <span class="p">(</span><span class="s1">&#39;feed.tasks.*&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="s1">&#39;feeds&#39;</span><span class="p">}),</span>
+    <span class="p">(</span><span class="s1">&#39;web.tasks.*&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="s1">&#39;web&#39;</span><span class="p">}),</span>
+    <span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(video|image)\.tasks\..*&#39;</span><span class="p">),</span> <span class="p">{</span><span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="s1">&#39;media&#39;</span><span class="p">}),</span>
+<span class="p">],)</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>task_routes</code> 设置可以是字典，也可以是路由器对象列表，因此在这种情况下，我们需要将设置指定为包含列表的元组。</p>
+</div>
+<p>安装路由器后，您可以像这样启动服务器 <code>z</code> 以仅处理 feeds 队列：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj worker -Q feeds</span>
+</code></pre></div>
+<p>您可以指定任意数量的队列，因此您可以让此服务器也处理默认队列：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj worker -Q feeds,celery</span>
+</code></pre></div>
+<h4 id="_2">更改默认队列的名称<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h4>
+<p>您可以使用以下配置更改默认队列的名称：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_default_queue</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+</code></pre></div>
+<h4 id="_3">队列是如何定义的<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h4>
+<p>此功能的目的是为只有基本需求的用户隐藏复杂的 AMQP 协议。然而——您可能仍然对这些队列是如何声明的感兴趣。</p>
+<p>名为 <code>"video"</code> 的队列将使用以下设置创建：</p>
+<div class="language-javascript highlight"><pre><span></span><code><span class="p">{</span><span class="s1">&#39;exchange&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;video&#39;</span><span class="p">,</span>
+<span class="w"> </span><span class="s1">&#39;exchange_type&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;direct&#39;</span><span class="p">,</span>
+<span class="w"> </span><span class="s1">&#39;routing_key&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;video&#39;</span><span class="p">}</span>
+</code></pre></div>
+<p>像 <code>Redis</code> 或 <code>SQS</code> 这样的非 AMQP 后端不支持交换器，因此它们要求交换器与队列具有相同的名称。使用这种设计确保它也能适用于它们。</p>
+<h3 id="_4">手动路由<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>假设您有两个服务器 <code>x</code> 和 <code>y</code> 处理常规任务，还有一个服务器 <code>z</code> 仅处理与 feed 相关的任务，您可以使用以下配置：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kombu</span><span class="w"> </span><span class="kn">import</span> <span class="n">Queue</span>
+
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_default_queue</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_queues</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Queue</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span>    <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;task.#&#39;</span><span class="p">),</span>
+    <span class="n">Queue</span><span class="p">(</span><span class="s1">&#39;feed_tasks&#39;</span><span class="p">,</span> <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;feed.#&#39;</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_default_exchange</span> <span class="o">=</span> <span class="s1">&#39;tasks&#39;</span>
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_default_exchange_type</span> <span class="o">=</span> <span class="s1">&#39;topic&#39;</span>
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_default_routing_key</span> <span class="o">=</span> <span class="s1">&#39;task.default&#39;</span>
+</code></pre></div>
+<p><code>task_queues</code> 是 <code>kombu.entity.Queue</code> 实例的列表。
+如果您没有为键设置交换器或交换器类型值，这些值将从 <code>task_default_exchange</code> 和 <code>task_default_exchange_type</code> 设置中获取。</p>
+<p>要将任务路由到 <code>feed_tasks</code> 队列，您可以在 <code>task_routes</code> 设置中添加一个条目：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">task_routes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;feeds.tasks.import_feed&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="s1">&#39;feed_tasks&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;routing_key&#39;</span><span class="p">:</span> <span class="s1">&#39;feed.import&#39;</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>您还可以使用 <code>apply_async()</code> 或 <code>send_task()</code> 的 <code>routing_key</code> 参数覆盖此设置：</p>
+<div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">feeds.tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_feed</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">import_feed</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;http://cnn.com/rss&#39;</span><span class="p">],</span>
+<span class="gp">... </span>                        <span class="n">queue</span><span class="o">=</span><span class="s1">&#39;feed_tasks&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                        <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;feed.import&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>要使服务器 <code>z</code> 专门从 feed 队列消费，您可以使用 :option:<code>celery worker -Q</code> 选项启动它：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj worker -Q feed_tasks --hostname=z@%h</span>
+</code></pre></div>
+<p>服务器 <code>x</code> 和 <code>y</code> 必须配置为从默认队列消费：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj worker -Q default --hostname=x@%h</span>
+<span class="go">celery -A proj worker -Q default --hostname=y@%h</span>
+</code></pre></div>
+<p>如果您愿意，您甚至可以让您的 feed 处理工作器也处理常规任务，也许在工作量很大的时候：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj worker -Q feed_tasks,default --hostname=z@%h</span>
+</code></pre></div>
+<p>如果您有另一个队列但想要添加到另一个交换器，只需指定自定义交换器和交换器类型：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kombu</span><span class="w"> </span><span class="kn">import</span> <span class="n">Exchange</span><span class="p">,</span> <span class="n">Queue</span>
+
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_queues</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Queue</span><span class="p">(</span><span class="s1">&#39;feed_tasks&#39;</span><span class="p">,</span>    <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;feed.#&#39;</span><span class="p">),</span>
+    <span class="n">Queue</span><span class="p">(</span><span class="s1">&#39;regular_tasks&#39;</span><span class="p">,</span> <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;task.#&#39;</span><span class="p">),</span>
+    <span class="n">Queue</span><span class="p">(</span><span class="s1">&#39;image_tasks&#39;</span><span class="p">,</span>   <span class="n">exchange</span><span class="o">=</span><span class="n">Exchange</span><span class="p">(</span><span class="s1">&#39;mediatasks&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;direct&#39;</span><span class="p">),</span>
+                           <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;image.compress&#39;</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>如果您对这些术语感到困惑，您应该阅读 AMQP 的相关资料。</p>
+<h2 id="_5">特殊路由选项<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<h3 id="rabbitmq">RabbitMQ 消息优先级<a class="headerlink" href="#rabbitmq" title="Permanent link">&para;</a></h3>
+<p>可以通过设置 <code>x-max-priority</code> 参数来配置队列以支持优先级：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kombu</span><span class="w"> </span><span class="kn">import</span> <span class="n">Exchange</span><span class="p">,</span> <span class="n">Queue</span>
+
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_queues</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Queue</span><span class="p">(</span><span class="s1">&#39;tasks&#39;</span><span class="p">,</span> <span class="n">Exchange</span><span class="p">(</span><span class="s1">&#39;tasks&#39;</span><span class="p">),</span> <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;tasks&#39;</span><span class="p">,</span>
+          <span class="n">queue_arguments</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x-max-priority&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">}),</span>
+<span class="p">]</span>
+</code></pre></div>
+<p>可以使用 <code>task_queue_max_priority</code> 设置来为所有队列设置默认值：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_queue_max_priority</span> <span class="o">=</span> <span class="mi">10</span>
+</code></pre></div>
+<p>也可以使用 <code>task_default_priority</code> 设置来为所有任务指定默认优先级：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_default_priority</span> <span class="o">=</span> <span class="mi">5</span>
+</code></pre></div>
+<h3 id="redis">Redis 消息优先级<a class="headerlink" href="#redis" title="Permanent link">&para;</a></h3>
+<p>虽然 Celery Redis 传输确实尊重优先级字段，但 Redis 本身没有优先级的概念。在尝试使用 Redis 实现优先级之前，请阅读此说明，因为您可能会遇到一些意外行为。</p>
+<p>要开始基于优先级调度任务，您需要配置 queue_order_strategy 传输选项。</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">broker_transport_options</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;queue_order_strategy&#39;</span><span class="p">:</span> <span class="s1">&#39;priority&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>优先级支持是通过为每个队列创建 n 个列表来实现的。这意味着即使有 10 个（0-9）优先级级别，默认情况下这些级别会被合并为 4 个级别以节省资源。这意味着名为 celery 的队列实际上会被拆分为 4 个队列。</p>
+<p>最高优先级的队列将被命名为 celery，而其他队列将有一个分隔符（默认为 <code>\x06\x16</code>）并在队列名称后附加其优先级编号。</p>
+<div class="language-python highlight"><pre><span></span><code><span class="p">[</span><span class="s1">&#39;celery&#39;</span><span class="p">,</span> <span class="s1">&#39;celery</span><span class="se">\x06\x16</span><span class="s1">3&#39;</span><span class="p">,</span> <span class="s1">&#39;celery</span><span class="se">\x06\x16</span><span class="s1">6&#39;</span><span class="p">,</span> <span class="s1">&#39;celery</span><span class="se">\x06\x16</span><span class="s1">9&#39;</span><span class="p">]</span>
+</code></pre></div>
+<p>如果您想要更多的优先级级别或不同的分隔符，可以设置 priority_steps 和 sep 传输选项：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">broker_transport_options</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;priority_steps&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)),</span>
+    <span class="s1">&#39;sep&#39;</span><span class="p">:</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;queue_order_strategy&#39;</span><span class="p">:</span> <span class="s1">&#39;priority&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>上面的配置将为您提供这些队列名称：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="p">[</span><span class="s1">&#39;celery&#39;</span><span class="p">,</span> <span class="s1">&#39;celery:1&#39;</span><span class="p">,</span> <span class="s1">&#39;celery:2&#39;</span><span class="p">,</span> <span class="s1">&#39;celery:3&#39;</span><span class="p">,</span> <span class="s1">&#39;celery:4&#39;</span><span class="p">,</span> <span class="s1">&#39;celery:5&#39;</span><span class="p">,</span> <span class="s1">&#39;celery:6&#39;</span><span class="p">,</span> <span class="s1">&#39;celery:7&#39;</span><span class="p">,</span> <span class="s1">&#39;celery:8&#39;</span><span class="p">,</span> <span class="s1">&#39;celery:9&#39;</span><span class="p">]</span>
+</code></pre></div>
+<p>也就是说，请注意这永远不会像在代理服务器级别实现的优先级那样好，最多只能是近似值。但它可能仍然足够满足您的应用程序需求。</p>
+<h2 id="amqp">AMQP 基础<a class="headerlink" href="#amqp" title="Permanent link">&para;</a></h2>
+<h3 id="_6">消息<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<p>一条消息由头部和主体组成。Celery 使用头部来存储消息的内容类型和内容编码。内容类型通常是用于序列化消息的序列化格式。主体包含要执行的任务名称、任务ID（UUID）、应用任务的参数以及一些额外的元数据——比如重试次数或预计到达时间（ETA）。</p>
+<p>这是一个表示为Python字典的任务消息示例：</p>
+<div class="language-javascript highlight"><pre><span></span><code><span class="p">{</span><span class="s1">&#39;task&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;myapp.tasks.add&#39;</span><span class="p">,</span>
+<span class="w"> </span><span class="s1">&#39;id&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;54086c5e-6193-4575-8308-dbab76798756&#39;</span><span class="p">,</span>
+<span class="w"> </span><span class="s1">&#39;args&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">4</span><span class="p">,</span><span class="w"> </span><span class="mf">4</span><span class="p">],</span>
+<span class="w"> </span><span class="s1">&#39;kwargs&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">{}}</span>
+</code></pre></div>
+<h3 id="_7">生产者、消费者和代理<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<p>发送消息的客户端通常称为<em>发布者</em>或<em>生产者</em>，而接收消息的实体称为<em>消费者</em>。</p>
+<p><em>代理</em>是消息服务器，负责将消息从生产者路由到消费者。</p>
+<p>在AMQP相关材料中，你很可能会经常看到这些术语。</p>
+<h3 id="_8">交换机、队列和路由键<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
+<ol>
+<li>消息被发送到交换机。</li>
+<li>交换机将消息路由到一个或多个队列。存在几种交换机类型，提供不同的路由方式，或实现不同的消息传递场景。</li>
+<li>消息在队列中等待，直到有人消费它。</li>
+<li>当消息被确认后，它会被从队列中删除。</li>
+</ol>
+<p>发送和接收消息所需的步骤是：</p>
+<ol>
+<li>创建一个交换机</li>
+<li>创建一个队列</li>
+<li>将队列绑定到交换机</li>
+</ol>
+<p>Celery 会自动创建 <code>task_queues</code> 中队列工作所需的实体（除非队列的 <code>auto_declare</code> 设置设为 <code>False</code>）。</p>
+<p>这是一个包含三个队列的队列配置示例；一个用于视频，一个用于图像，还有一个默认队列用于其他所有内容：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kombu</span><span class="w"> </span><span class="kn">import</span> <span class="n">Exchange</span><span class="p">,</span> <span class="n">Queue</span>
+
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_queues</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Queue</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="n">Exchange</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">),</span> <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">),</span>
+    <span class="n">Queue</span><span class="p">(</span><span class="s1">&#39;videos&#39;</span><span class="p">,</span>  <span class="n">Exchange</span><span class="p">(</span><span class="s1">&#39;media&#39;</span><span class="p">),</span>   <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;media.video&#39;</span><span class="p">),</span>
+    <span class="n">Queue</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">,</span>  <span class="n">Exchange</span><span class="p">(</span><span class="s1">&#39;media&#39;</span><span class="p">),</span>   <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;media.image&#39;</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_default_queue</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_default_exchange_type</span> <span class="o">=</span> <span class="s1">&#39;direct&#39;</span>
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_default_routing_key</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+</code></pre></div>
+<h3 id="_9">交换机类型<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<p>交换机类型定义了消息如何通过交换机进行路由。标准中定义的交换机类型有 <code>direct</code>、<code>topic</code>、<code>fanout</code> 和 <code>headers</code>。此外，非标准的交换机类型也可作为 RabbitMQ 的插件使用，比如 Michael Bridgen 的 <a href="https://github.com/squaremo/rabbitmq-lvc-plugin">last-value-cache 插件</a>。</p>
+<h4 id="_10">直连交换机<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h4>
+<p>直连交换机通过精确的路由键进行匹配，因此绑定到路由键 <code>video</code> 的队列只会接收具有该路由键的消息。</p>
+<h4 id="_11">主题交换机<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h4>
+<p>主题交换机使用点分隔的单词和通配符字符来匹配路由键：<code>*</code>（匹配单个单词）和 <code>#</code>（匹配零个或多个单词）。</p>
+<p>对于像 <code>usa.news</code>、<code>usa.weather</code>、<code>norway.news</code> 和 <code>norway.weather</code> 这样的路由键，绑定可以是 <code>*.news</code>（所有新闻）、<code>usa.#</code>（美国的所有项目）或 <code>usa.weather</code>（所有美国天气项目）。</p>
+<h4 id="api">相关API命令<a class="headerlink" href="#api" title="Permanent link">&para;</a></h4>
+<p><strong>exchange.declare(exchange_name, type, passive, durable, auto_delete, internal)</strong></p>
+<p>通过名称声明一个交换机。</p>
+<table>
+<thead>
+<tr>
+<th>关键字</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>passive</td>
+<td>被动模式意味着不会创建交换机，但你可以使用它来检查交换机是否已存在。</td>
+</tr>
+<tr>
+<td>durable</td>
+<td>持久化交换机是持久的（即，它们在代理重启后仍然存在）。</td>
+</tr>
+<tr>
+<td>auto_delete</td>
+<td>这意味着当没有更多队列使用该交换机时，代理将删除它。</td>
+</tr>
+</tbody>
+</table>
+<p><strong>queue.declare(queue_name, passive, durable, exclusive, auto_delete)</strong></p>
+<p>通过名称声明一个队列。</p>
+<p>独占队列只能由当前连接消费。独占也意味着 <code>auto_delete</code>。</p>
+<p><strong>queue.bind(queue_name, exchange_name, routing_key)</strong></p>
+<p>使用路由键将队列绑定到交换机。</p>
+<p>未绑定的队列不会接收消息，因此这是必要的。</p>
+<p>参见 <code>amqp.channel.Channel.queue_bind</code></p>
+<p><strong>queue.delete(name, if_unused=False, if_empty=False)</strong></p>
+<p>删除一个队列及其绑定。</p>
+<p>参见 <code>amqp.channel.Channel.queue_delete</code></p>
+<p><strong>exchange.delete(name, if_unused=False)</strong></p>
+<p>删除一个交换机。</p>
+<p>参见 <code>amqp.channel.Channel.exchange_delete</code></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>声明并不一定意味着"创建"。当你声明时，你<em>断言</em>该实体存在且可操作。没有规则规定谁应该最初创建交换机/队列/绑定，无论是消费者还是生产者。通常，第一个需要它的人将是创建它的人。</p>
+</div>
+<h3 id="api_1">动手实践API<a class="headerlink" href="#api_1" title="Permanent link">&para;</a></h3>
+<p>Celery 附带了一个名为 <code>celery amqp</code> 的工具，用于通过命令行访问 AMQP API，可以执行管理任务，如创建/删除队列和交换机、清空队列或发送消息。它也可以用于非 AMQP 代理，但不同的实现可能不支持所有命令。</p>
+<p>你可以直接在 <code>celery amqp</code> 的参数中写入命令，或者不带参数启动它以进入 shell 模式：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj amqp</span>
+<span class="go">-&gt; connecting to amqp://guest@localhost:5672/.</span>
+<span class="go">-&gt; connected.</span>
+<span class="go">1&gt;</span>
+</code></pre></div>
+<p>这里的 <code>1&gt;</code> 是提示符。数字 1 表示你到目前为止执行的命令数量。输入 <code>help</code> 查看可用的命令列表。
+它还支持自动补全，因此你可以开始输入命令，然后按 <code>tab</code> 键显示可能的匹配列表。</p>
+<p>让我们创建一个可以发送消息的队列：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj amqp</span>
+<span class="go">1&gt; exchange.declare testexchange direct</span>
+<span class="go">ok.</span>
+<span class="go">2&gt; queue.declare testqueue</span>
+<span class="go">ok. queue:testqueue messages:0 consumers:0.</span>
+<span class="go">3&gt; queue.bind testqueue testexchange testkey</span>
+<span class="go">ok.</span>
+</code></pre></div>
+<p>这创建了直连交换机 <code>testexchange</code> 和一个名为 <code>testqueue</code> 的队列。该队列使用路由键 <code>testkey</code> 绑定到交换机。</p>
+<p>从现在开始，所有发送到交换机 <code>testexchange</code> 且路由键为 <code>testkey</code> 的消息都将被移动到该队列。你可以使用 <code>basic.publish</code> 命令发送消息：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">4&gt; basic.publish &#39;This is a message!&#39; testexchange testkey</span>
+<span class="go">ok.</span>
+</code></pre></div>
+<p>现在消息已发送，你可以再次检索它。你可以使用 <code>basic.get</code> 命令，它以同步方式轮询队列中的新消息（这对于维护任务来说是可以的，但对于服务，你应该使用 <code>basic.consume</code>）。</p>
+<p>从队列中弹出一条消息：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">5&gt; basic.get testqueue</span>
+<span class="go">{&#39;body&#39;: &#39;This is a message!&#39;,</span>
+<span class="go"> &#39;delivery_info&#39;: {&#39;delivery_tag&#39;: 1,</span>
+<span class="go">                   &#39;exchange&#39;: u&#39;testexchange&#39;,</span>
+<span class="go">                   &#39;message_count&#39;: 0,</span>
+<span class="go">                   &#39;redelivered&#39;: False,</span>
+<span class="go">                   &#39;routing_key&#39;: u&#39;testkey&#39;},</span>
+<span class="go"> &#39;properties&#39;: {}}</span>
+</code></pre></div>
+<p>AMQP 使用确认来表示消息已成功接收和处理。如果消息未被确认且消费者通道关闭，该消息将被传递给另一个消费者。</p>
+<p>注意上面结构中列出的投递标签；在连接通道内，每个接收到的消息都有一个唯一的投递标签，该标签用于确认消息。还要注意投递标签在连接之间不是唯一的，因此在另一个客户端中，投递标签 <code>1</code> 可能指向与此通道中不同的消息。</p>
+<p>你可以使用 <code>basic.ack</code> 确认你收到的消息：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">6&gt; basic.ack 1</span>
+<span class="go">ok.</span>
+</code></pre></div>
+<p>测试会话结束后，你应该删除创建的实体以进行清理：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">7&gt; queue.delete testqueue</span>
+<span class="go">ok. 0 messages deleted.</span>
+<span class="go">8&gt; exchange.delete testexchange</span>
+<span class="go">ok.</span>
+</code></pre></div>
+<h2 id="_12">路由任务<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<h3 id="_13">定义队列<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<p>在 Celery 中，可用队列由 <code>task_queues</code> 设置定义。</p>
+<p>这是一个包含三个队列的示例配置；一个用于视频，一个用于图像，还有一个默认队列用于其他所有任务：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">default_exchange</span> <span class="o">=</span> <span class="n">Exchange</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;direct&#39;</span><span class="p">)</span>
+<span class="n">media_exchange</span> <span class="o">=</span> <span class="n">Exchange</span><span class="p">(</span><span class="s1">&#39;media&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;direct&#39;</span><span class="p">)</span>
+
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_queues</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Queue</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="n">default_exchange</span><span class="p">,</span> <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">),</span>
+    <span class="n">Queue</span><span class="p">(</span><span class="s1">&#39;videos&#39;</span><span class="p">,</span> <span class="n">media_exchange</span><span class="p">,</span> <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;media.video&#39;</span><span class="p">),</span>
+    <span class="n">Queue</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">,</span> <span class="n">media_exchange</span><span class="p">,</span> <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;media.image&#39;</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_default_queue</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_default_exchange</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_default_routing_key</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+</code></pre></div>
+<p>在这里，<code>task_default_queue</code> 将用于路由没有显式路由的任务。</p>
+<p>默认的交换机、交换机类型和路由键将用作任务的默认路由值，以及 <code>task_queues</code> 中条目的默认值。</p>
+<p>还支持对单个队列的多个绑定。这是一个两个路由键都绑定到同一个队列的示例：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kombu</span><span class="w"> </span><span class="kn">import</span> <span class="n">Exchange</span><span class="p">,</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">binding</span>
+
+<span class="n">media_exchange</span> <span class="o">=</span> <span class="n">Exchange</span><span class="p">(</span><span class="s1">&#39;media&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;direct&#39;</span><span class="p">)</span>
+
+<span class="n">CELERY_QUEUES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Queue</span><span class="p">(</span><span class="s1">&#39;media&#39;</span><span class="p">,</span> <span class="p">[</span>
+        <span class="n">binding</span><span class="p">(</span><span class="n">media_exchange</span><span class="p">,</span> <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;media.video&#39;</span><span class="p">),</span>
+        <span class="n">binding</span><span class="p">(</span><span class="n">media_exchange</span><span class="p">,</span> <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;media.image&#39;</span><span class="p">),</span>
+    <span class="p">]),</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="_14">指定任务目的地<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
+<p>任务的目的地由以下因素决定（按顺序）：</p>
+<ol>
+<li><code>apply_async()</code> 的路由参数</li>
+<li>在 <code>Task</code> 本身上定义的路由相关属性</li>
+<li><code>task_routes</code> 中定义的 <code>routers</code></li>
+</ol>
+<p>最佳实践是不硬编码这些设置，而是通过使用 <code>routers</code> 将其作为配置选项；这是最灵活的方法，但仍然可以将合理的默认值设置为任务属性。</p>
+<h3 id="_15">路由器<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
+<p>路由器是一个决定任务路由选项的函数。</p>
+<p>定义新路由器只需要定义一个具有以下签名的函数 <code>(name, args, kwargs, options, task=None, **kw)</code>：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">route_task</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;myapp.tasks.compress_video&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;exchange&#39;</span><span class="p">:</span> <span class="s1">&#39;video&#39;</span><span class="p">,</span> <span class="s1">&#39;exchange_type&#39;</span><span class="p">:</span> <span class="s1">&#39;topic&#39;</span><span class="p">,</span> <span class="s1">&#39;routing_key&#39;</span><span class="p">:</span> <span class="s1">&#39;video.compress&#39;</span><span class="p">}</span>
+</code></pre></div>
+<p>如果您返回 <code>queue</code> 键，它将与 <code>task_queues</code> 中该队列的已定义设置一起展开：</p>
+<div class="language-javascript highlight"><pre><span></span><code><span class="p">{</span><span class="s1">&#39;queue&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;video&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;routing_key&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;video.compress&#39;</span><span class="p">}</span>
+</code></pre></div>
+<p>变成 --&gt;</p>
+<div class="language-javascript highlight"><pre><span></span><code><span class="p">{</span><span class="s1">&#39;queue&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;video&#39;</span><span class="p">,</span>
+<span class="w"> </span><span class="s1">&#39;exchange&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;video&#39;</span><span class="p">,</span>
+<span class="w"> </span><span class="s1">&#39;exchange_type&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;topic&#39;</span><span class="p">,</span>
+<span class="w"> </span><span class="s1">&#39;routing_key&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;video.compress&#39;</span><span class="p">}</span>
+</code></pre></div>
+<p>您可以通过将路由器类添加到 <code>task_routes</code> 设置中来安装它们：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">task_routes</span> <span class="o">=</span> <span class="p">(</span><span class="n">route_task</span><span class="p">,)</span>
+</code></pre></div>
+<p>路由器函数也可以通过名称添加：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">task_routes</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;myapp.routers.route_task&#39;</span><span class="p">,)</span>
+</code></pre></div>
+<p>对于像上面路由器示例那样的简单任务名称 -&gt; 路由映射，您可以简单地将字典放入 <code>task_routes</code> 以获得相同的行为：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">task_routes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;myapp.tasks.compress_video&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="s1">&#39;video&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;routing_key&#39;</span><span class="p">:</span> <span class="s1">&#39;video.compress&#39;</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>然后路由器将按顺序遍历，将在第一个返回真值的路由器处停止，并将其用作任务的最终路由。</p>
+<p>您还可以定义多个路由器序列：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">task_routes</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">route_task</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="s1">&#39;myapp.tasks.compress_video&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="s1">&#39;video&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;routing_key&#39;</span><span class="p">:</span> <span class="s1">&#39;video.compress&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+<span class="p">]</span>
+</code></pre></div>
+<p>然后路由器将依次访问，第一个返回值的路由器将被选择。</p>
+<p>如果您使用 Redis 或 RabbitMQ，还可以在路由中指定队列的默认优先级。</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">task_routes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;myapp.tasks.compress_video&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="s1">&#39;video&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;routing_key&#39;</span><span class="p">:</span> <span class="s1">&#39;video.compress&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;priority&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>类似地，在任务上调用 <code>apply_async</code> 将覆盖该默认优先级。</p>
+<div class="language-python highlight"><pre><span></span><code><span class="n">task</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">priority</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">优先级顺序和集群响应性</p>
+<p>需要注意的是，由于工作进程预取，如果同时提交一批任务，它们最初可能不按优先级顺序排列。禁用工作进程预取将防止此问题，但可能导致小型快速任务的性能不理想。在大多数情况下，简单地将 <code>worker_prefetch_multiplier</code> 减少到 1 是增加系统响应性的更简单、更干净的方法，而无需承担完全禁用预取的成本。</p>
+<p>请注意，使用 redis 代理时，优先级值是反向排序的：0 为最高优先级。</p>
+</div>
+<h3 id="_16">广播<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h3>
+<p>Celery 还支持广播路由。
+这是一个将任务副本发送给连接到它的所有工作进程的交换机 <code>broadcast_tasks</code> 的示例：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kombu.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">Broadcast</span>
+
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_queues</span> <span class="o">=</span> <span class="p">(</span><span class="n">Broadcast</span><span class="p">(</span><span class="s1">&#39;broadcast_tasks&#39;</span><span class="p">),)</span>
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_routes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;tasks.reload_cache&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="s1">&#39;broadcast_tasks&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;exchange&#39;</span><span class="p">:</span> <span class="s1">&#39;broadcast_tasks&#39;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>现在 <code>tasks.reload_cache</code> 任务将被发送给从此队列消费的每个工作进程。</p>
+<p>这是另一个广播路由的示例，这次使用 <code>celery beat</code> 调度：</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">kombu.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">Broadcast</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">celery.schedules</span><span class="w"> </span><span class="kn">import</span> <span class="n">crontab</span>
+
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">task_queues</span> <span class="o">=</span> <span class="p">(</span><span class="n">Broadcast</span><span class="p">(</span><span class="s1">&#39;broadcast_tasks&#39;</span><span class="p">),)</span>
+
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">beat_schedule</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;test-task&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="s1">&#39;tasks.reload_cache&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;schedule&#39;</span><span class="p">:</span> <span class="n">crontab</span><span class="p">(</span><span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="s1">&#39;*/3&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;options&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;exchange&#39;</span><span class="p">:</span> <span class="s1">&#39;broadcast_tasks&#39;</span><span class="p">}</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">广播和结果</p>
+<p>请注意，Celery 结果没有定义如果两个任务具有相同的 task_id 会发生什么。如果同一个任务被分发给多个工作进程，则状态历史可能不会被保留。</p>
+<p>在这种情况下，设置 <code>task.ignore_result</code> 属性是一个好主意。</p>
+</div>
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../periodic-tasks/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 周期性任务">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                周期性任务
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../monitoring/" class="md-footer__link md-footer__link--next" aria-label="下一页: 监控与管理">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                监控与管理
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      译者 <a href="https://github.com/oaixnah" target="_blank">oaixnah</a>
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.tabs.link","navigation.instant","navigation.instant.prefetch","navigation.instant.progress","navigation.indexes","navigation.top","navigation.footer","navigation.tabs","navigation.expand","navigation.tracking","search.suggest","search.highlight","search.share","toc.follow"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"已复制","clipboard.copy":"复制","search.result.more.one":"在该页上还有 1 个符合条件的结果","search.result.more.other":"在该页上还有 # 个符合条件的结果","search.result.none":"没有找到符合条件的结果","search.result.one":"找到 1 个符合条件的结果","search.result.other":"# 个符合条件的结果","search.result.placeholder":"键入以开始搜索","search.result.term.missing":"缺少","select.version":"选择当前版本"},"version":null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.00c35305.min.js"></script>
+      
+    
+  </body>
+</html>

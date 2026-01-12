@@ -1,0 +1,2503 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Celery守护进程配置指南 - 详细讲解如何在Linux系统中使用systemd和init.d脚本将Celery worker和beat服务配置为守护进程，包括完整的配置文件示例、故障排除方法和安全注意事项。">
+      
+      
+        <meta name="author" content="oaixnah">
+      
+      
+        <link rel="canonical" href="https://celery.oaix.tech/user-guide/daemonizing/">
+      
+      
+        <link rel="prev" href="../workers/">
+      
+      
+        <link rel="next" href="../periodic-tasks/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.ico">
+      <meta name="generator" content="zensical-0.0.15">
+    
+    
+      
+        <title>守护进程 - Celery 中文文档</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.f1b6466b.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+  
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+  
+  <style>:root{}</style>
+
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="Celery 中文文档" class="md-header__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+      
+  <img src="../../assets/celery_128.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Celery 中文文档
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              守护进程
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="查找">
+  <button type="button" class="md-search__button">
+    查找
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/celery/celery" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    celery/celery
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/introduction/" class="md-tabs__link">
+          
+  
+  快速入门
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../application/" class="md-tabs__link">
+          
+  
+  用户指南
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../django/" class="md-tabs__link">
+        
+  
+  Django
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../faq/" class="md-tabs__link">
+        
+  
+  QA
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Celery 中文文档" class="md-nav__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+      
+  <img src="../../assets/celery_128.png" alt="logo">
+
+    </a>
+    Celery 中文文档
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/celery/celery" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    celery/celery
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速入门
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    快速入门
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    介绍
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/backends-and-brokers/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后端与代理
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    后端与代理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/redis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/rabbitmq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RabbitMQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/sqs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SQS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/kafka/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kafka
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/backends-and-brokers/gcpubsub/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Google Pub/Sub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/first-steps-with-celery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速上手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    后续步骤
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    用户指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    用户指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../application/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    应用程序
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../calling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../canvas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    画布
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工作进程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    守护进程
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    守护进程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#daemon-generic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        通用初始化脚本
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="通用初始化脚本">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#celeryd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        初始化脚本: celeryd
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="初始化脚本: celeryd">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        使用登录 shell
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#django" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Django 示例配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        可用选项
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celerybeat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        初始化脚本: celerybeat
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="初始化脚本: celerybeat">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#django_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Django 示例配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        可用选项
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        故障排除
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#daemon-systemd-generic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        使用 systemd
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="使用 systemd">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#celeryservice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        服务文件: celery.service
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="服务文件: celery.service">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celerybeatservice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        服务文件: celerybeat.service
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#root" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        使用超级用户权限（root）运行工作进程
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../periodic-tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    周期性任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../routing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    路由任务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    监控与管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安全
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../optimizing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_13" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../concurrency/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    并发
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_13" id="__nav_3_13_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    并发
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concurrency/eventlet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eventlet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concurrency/gevent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gevent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../signals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    信号
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extending/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    扩展
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    配置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../django/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Django
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#daemon-generic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        通用初始化脚本
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="通用初始化脚本">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#celeryd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        初始化脚本: celeryd
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="初始化脚本: celeryd">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        使用登录 shell
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#django" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Django 示例配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        可用选项
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celerybeat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        初始化脚本: celerybeat
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="初始化脚本: celerybeat">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#django_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Django 示例配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        可用选项
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        故障排除
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#daemon-systemd-generic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        使用 systemd
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="使用 systemd">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#celeryservice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        服务文件: celery.service
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="服务文件: celery.service">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        示例配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celerybeatservice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        服务文件: celerybeat.service
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#root" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        使用超级用户权限（root）运行工作进程
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+  
+
+
+<h1 id="_1">守护进程<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>如今大多数 Linux 发行版都使用 systemd 来管理系统和用户服务的生命周期。</p>
+<p>您可以通过输入以下命令来检查您的 Linux 发行版是否使用 systemd：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">systemctl --version</span>
+<span class="go">systemd 249 (v249.9-1.fc35)</span>
+<span class="go">+PAM +AUDIT +SELINUX -APPARMOR +IMA +SMACK +SECCOMP +GCRYPT +GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +IPTC +KMOD +LIBCRYPTSETUP +LIBFDISK +PCRE2 +PWQUALITY +P11KIT +QRENCODE +BZIP2 +LZ4 +XZ +ZLIB +ZSTD +XKBCOMMON +UTMP +SYSVINIT default-hierarchy=unified</span>
+</code></pre></div>
+<p>如果您有类似的输出，请参考 <a href="#daemon-systemd-generic">使用 systemd</a> 获取指导。</p>
+<p>然而，init.d 脚本在这些 Linux 发行版中仍然应该有效，因为 systemd 提供了 systemd-sysv 兼容层，它会自动从我们提供的 init.d 脚本生成服务。</p>
+<p>如果您为多个 Linux 发行版打包 Celery，并且其中一些不支持 systemd，或者也面向其他 Unix 系统，您可能需要参考 <a href="#daemon-generic">通用初始化脚本</a>。</p>
+<h2 id="daemon-generic">通用初始化脚本<a class="headerlink" href="#daemon-generic" title="Permanent link">&para;</a></h2>
+<p>请参阅 Celery 发行版中的 <a href="https://github.com/celery/celery/tree/main/extra/generic-init.d/" target="_blank">extra/generic-init.d/</a> 目录。</p>
+<p>该目录包含用于 <code>celery worker</code> 程序的通用 bash 初始化脚本，这些脚本应该可以在 Linux、FreeBSD、OpenBSD 和其他类 Unix 平台上运行。</p>
+<h3 id="celeryd">初始化脚本: <code>celeryd</code><a class="headerlink" href="#celeryd" title="Permanent link">&para;</a></h3>
+<p><strong>用法</strong>: <code>/etc/init.d/celeryd {start|stop|restart|status}</code></p>
+<p><strong>配置文件</strong>: <code>/etc/default/celeryd</code></p>
+<p>要正确配置此脚本以运行 worker，您至少需要告诉它在启动时切换到哪个目录（以找到包含您的应用程序或配置模块的模块）。</p>
+<p>守护进程脚本由文件 <code>/etc/default/celeryd</code> 配置。这是一个 shell (<code>sh</code>) 脚本，您可以在其中添加环境变量，如下面的配置选项所示。要添加影响 worker 的实际环境变量，您还必须导出它们（例如，<code>export DISPLAY=":0"</code>）</p>
+<div class="admonition tip">
+<p class="admonition-title">需要超级用户权限</p>
+<p>初始化脚本只能由 root 用户使用，并且 shell 配置文件也必须归 root 所有。</p>
+<p>非特权用户不需要使用初始化脚本，而是可以使用 <code>celery multi</code> 实用程序（或 <code>celery worker --detach</code>）：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">celery -A proj multi start worker1 \</span>
+<span class="go">    --pidfile=&quot;$HOME/run/celery/%n.pid&quot; \</span>
+<span class="go">    --logfile=&quot;$HOME/log/celery/%n%I.log&quot;</span>
+
+<span class="go">celery -A proj multi restart worker1 \</span>
+<span class="go">    --logfile=&quot;$HOME/log/celery/%n%I.log&quot; \</span>
+<span class="go">    --pidfile=&quot;$HOME/run/celery/%n.pid</span>
+
+<span class="go">celery multi stopwait worker1 --pidfile=&quot;$HOME/run/celery/%n.pid&quot;</span>
+</code></pre></div>
+</div>
+<h4 id="_2">示例配置<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h4>
+<p>这是一个 Python 项目的示例配置。</p>
+<div class="language-bash highlight"><span class="filename">/etc/default/celeryd</span><pre><span></span><code><span class="c1"># 要启动的节点名称</span>
+<span class="c1">#   大多数人只会启动一个节点：</span>
+<span class="nv">CELERYD_NODES</span><span class="o">=</span><span class="s2">&quot;worker1&quot;</span>
+<span class="c1">#   但您也可以启动多个节点并在 CELERYD_OPTS 中为每个节点配置设置</span>
+<span class="c1">#CELERYD_NODES=&quot;worker1 worker2 worker3&quot;</span>
+<span class="c1">#   或者，您可以指定要启动的节点数量：</span>
+<span class="c1">#CELERYD_NODES=10</span>
+
+<span class="c1"># &#39;celery&#39; 命令的绝对或相对路径：</span>
+<span class="nv">CELERY_BIN</span><span class="o">=</span><span class="s2">&quot;/usr/local/bin/celery&quot;</span>
+<span class="c1">#CELERY_BIN=&quot;/virtualenvs/def/bin/celery&quot;</span>
+
+<span class="c1"># 要使用的应用程序实例</span>
+<span class="c1"># 如果不使用应用程序，请注释掉此行</span>
+<span class="nv">CELERY_APP</span><span class="o">=</span><span class="s2">&quot;proj&quot;</span>
+<span class="c1"># 或完全限定：</span>
+<span class="c1">#CELERY_APP=&quot;proj.tasks:app&quot;</span>
+
+<span class="c1"># 启动时要切换到的目录。</span>
+<span class="nv">CELERYD_CHDIR</span><span class="o">=</span><span class="s2">&quot;/opt/Myproject/&quot;</span>
+
+<span class="c1"># 传递给 worker 的额外命令行参数</span>
+<span class="nv">CELERYD_OPTS</span><span class="o">=</span><span class="s2">&quot;--time-limit=300 --concurrency=8&quot;</span>
+<span class="c1"># 通过将节点名称附加到参数来配置特定于节点的设置：</span>
+<span class="c1">#CELERYD_OPTS=&quot;--time-limit=300 -c 8 -c:worker2 4 -c:worker3 2 -Ofair:worker1&quot;</span>
+
+<span class="c1"># 将日志级别设置为 DEBUG</span>
+<span class="c1">#CELERYD_LOG_LEVEL=&quot;DEBUG&quot;</span>
+
+<span class="c1"># %n 将被替换为节点名称的第一部分。</span>
+<span class="nv">CELERYD_LOG_FILE</span><span class="o">=</span><span class="s2">&quot;/var/log/celery/%n%I.log&quot;</span>
+<span class="nv">CELERYD_PID_FILE</span><span class="o">=</span><span class="s2">&quot;/var/run/celery/%n.pid&quot;</span>
+
+<span class="c1"># Worker 应该以非特权用户身份运行。</span>
+<span class="c1">#   您需要手动创建此用户（或者您可以选择</span>
+<span class="c1">#   已经存在的用户/组组合（例如，nobody））。</span>
+<span class="nv">CELERYD_USER</span><span class="o">=</span><span class="s2">&quot;celery&quot;</span>
+<span class="nv">CELERYD_GROUP</span><span class="o">=</span><span class="s2">&quot;celery&quot;</span>
+
+<span class="c1"># 如果启用，将在缺失时创建 pid 和日志目录，</span>
+<span class="c1"># 并由配置的用户 ID/组拥有。</span>
+<span class="nv">CELERY_CREATE_DIRS</span><span class="o">=</span><span class="m">1</span>
+</code></pre></div>
+<h3 id="shell">使用登录 shell<a class="headerlink" href="#shell" title="Permanent link">&para;</a></h3>
+<p>您可以通过使用登录 shell 来继承 <code>CELERYD_USER</code> 的环境：</p>
+<div class="language-bash highlight"><pre><span></span><code><span class="nv">CELERYD_SU_ARGS</span><span class="o">=</span><span class="s2">&quot;-l&quot;</span>
+</code></pre></div>
+<p>请注意，这不被推荐，您应该只在绝对必要时使用此选项。</p>
+<h3 id="django">Django 示例配置<a class="headerlink" href="#django" title="Permanent link">&para;</a></h3>
+<p>Django 用户现在使用与上面完全相同的模板，但请确保定义 Celery 应用程序实例的模块也为 <code>DJANGO_SETTINGS_MODULE</code> 设置了默认值，如 :ref:<code>django-first-steps</code> 中的示例 Django 项目所示。</p>
+<h3 id="_3">可用选项<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+    <th>选项</th>
+    <th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CELERY_APP</code></td>
+<td>
+要使用的应用程序实例（<code>celery --app</code> 参数的值）。
+</td>
+</tr>
+<tr>
+<td><code>CELERY_BIN</code></td>
+<td>
+<code>celery</code> 程序的绝对或相对路径。
+示例：
+
+<code>celery</code>
+<code>/usr/local/bin/celery</code>
+<code>/virtualenvs/proj/bin/celery</code>
+<code>/virtualenvs/proj/bin/python -m celery</code>
+</td>
+</tr>
+<tr>
+<td><code>CELERYD_NODES</code></td>
+<td>
+要启动的节点名称列表（用空格分隔）。
+</td>
+</tr>
+<tr>
+<td><code>CELERYD_OPTS</code></td>
+<td>
+worker 的额外命令行参数，请参阅
+<code>celery worker --help</code> 获取列表。这也支持 <code>multi</code> 使用的扩展语法
+来配置各个节点的设置。
+请参阅 <code>celery multi --help</code> 获取一些多节点配置示例。
+</td>
+</tr>
+<tr>
+<td><code>CELERYD_CHDIR</code></td>
+<td>
+启动时要切换到的路径。默认是保持在当前目录。
+</td>
+</tr>
+<tr>
+<td><code>CELERYD_PID_FILE</code></td>
+<td>
+PID 文件的完整路径。默认是 /var/run/celery/%n.pid
+</td>
+</tr>
+<tr>
+<td><code>CELERYD_LOG_FILE</code></td>
+<td>
+worker 日志文件的完整路径。默认是 /var/log/celery/%n%I.log
+**注意**：在使用 prefork 池时，使用 <code>%I</code> 很重要，因为
+多个进程共享同一个日志文件会导致竞争条件。
+</td>
+</tr>
+<tr>
+<td><code>CELERYD_LOG_LEVEL</code></td>
+<td>
+worker 日志级别。默认是 INFO。
+</td>
+</tr>
+<tr>
+<td><code>CELERYD_USER</code></td>
+<td>
+运行 worker 的用户。默认是当前用户。
+</td>
+</tr>
+<tr>
+<td><code>CELERYD_GROUP</code></td>
+<td>
+运行 worker 的组。默认是当前用户。
+</td>
+</tr>
+<tr>
+<td><code>CELERY_CREATE_DIRS</code></td>
+<td>
+始终创建目录（日志目录和 pid 文件目录）。
+默认仅在未设置自定义日志文件/pid 文件时创建目录。
+</td>
+</tr>
+<tr>
+<td><code>CELERY_CREATE_RUNDIR</code></td>
+<td>
+始终创建 pid 文件目录。默认仅在未设置自定义 pid 文件位置时启用。
+</td>
+</tr>
+<tr>
+<td><code>CELERY_CREATE_LOGDIR</code></td>
+<td>
+始终创建日志文件目录。默认仅在未设置自定义日志文件位置时启用。
+</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="celerybeat">初始化脚本: <code>celerybeat</code><a class="headerlink" href="#celerybeat" title="Permanent link">&para;</a></h3>
+<p><strong>用法</strong>: <code>/etc/init.d/celerybeat {start|stop|restart}</code></p>
+<p><strong>配置文件</strong>: <code>/etc/default/celerybeat</code> 或 <code>/etc/default/celeryd</code>。</p>
+<h4 id="_4">示例配置<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h4>
+<p>这是一个 Python 项目的示例配置：</p>
+<div class="language-bash highlight"><span class="filename">/etc/default/celerybeat</span><pre><span></span><code><span class="c1"># &#39;celery&#39; 命令的绝对或相对路径：</span>
+<span class="nv">CELERY_BIN</span><span class="o">=</span><span class="s2">&quot;/usr/local/bin/celery&quot;</span>
+<span class="c1">#CELERY_BIN=&quot;/virtualenvs/def/bin/celery&quot;</span>
+
+<span class="c1"># 要使用的应用程序实例</span>
+<span class="c1"># 如果不使用应用程序，请注释掉此行</span>
+<span class="nv">CELERY_APP</span><span class="o">=</span><span class="s2">&quot;proj&quot;</span>
+<span class="c1"># 或完全限定：</span>
+<span class="c1">#CELERY_APP=&quot;proj.tasks:app&quot;</span>
+
+<span class="c1"># 启动时要切换到的目录。</span>
+<span class="nv">CELERYBEAT_CHDIR</span><span class="o">=</span><span class="s2">&quot;/opt/Myproject/&quot;</span>
+
+<span class="c1"># 传递给 celerybeat 的额外参数</span>
+<span class="nv">CELERYBEAT_OPTS</span><span class="o">=</span><span class="s2">&quot;--schedule=/var/run/celery/celerybeat-schedule&quot;</span>
+</code></pre></div>
+<h4 id="django_1">Django 示例配置<a class="headerlink" href="#django_1" title="Permanent link">&para;</a></h4>
+<p>您应该使用与上面相同的模板，但请确保 <code>DJANGO_SETTINGS_MODULE</code> 变量已设置（并导出），并且 <code>CELERYD_CHDIR</code> 设置为项目目录：</p>
+<div class="language-bash highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">DJANGO_SETTINGS_MODULE</span><span class="o">=</span><span class="s2">&quot;settings&quot;</span>
+
+<span class="nv">CELERYD_CHDIR</span><span class="o">=</span><span class="s2">&quot;/opt/MyProject&quot;</span>
+</code></pre></div>
+<h4 id="_5">可用选项<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CELERY_APP</code></td>
+<td>要使用的应用程序实例（<code>celery --app</code> 参数的值）。</td>
+</tr>
+<tr>
+<td><code>CELERYBEAT_OPTS</code></td>
+<td>传递给 <code>celery beat</code> 的额外参数，请参阅 <code>celery beat --help</code> 获取可用选项列表。</td>
+</tr>
+<tr>
+<td><code>CELERYBEAT_PID_FILE</code></td>
+<td>PID 文件的完整路径。默认是 <code>/var/run/celeryd.pid</code>。</td>
+</tr>
+<tr>
+<td><code>CELERYBEAT_LOG_FILE</code></td>
+<td>日志文件的完整路径。默认是 <code>/var/log/celeryd.log</code>。</td>
+</tr>
+<tr>
+<td><code>CELERYBEAT_LOG_LEVEL</code></td>
+<td>要使用的日志级别。默认是 <code>INFO</code>。</td>
+</tr>
+<tr>
+<td><code>CELERYBEAT_USER</code></td>
+<td>运行 beat 的用户。默认是当前用户。</td>
+</tr>
+<tr>
+<td><code>CELERYBEAT_GROUP</code></td>
+<td>运行 beat 的组。默认是当前用户。</td>
+</tr>
+<tr>
+<td><code>CELERY_CREATE_DIRS</code></td>
+<td>始终创建目录（日志目录和 pid 文件目录）。默认仅在未设置自定义日志文件/pid 文件时创建目录。</td>
+</tr>
+<tr>
+<td><code>CELERY_CREATE_RUNDIR</code></td>
+<td>始终创建 pid 文件目录。默认仅在未设置自定义 pid 文件位置时启用。</td>
+</tr>
+<tr>
+<td><code>CELERY_CREATE_LOGDIR</code></td>
+<td>始终创建日志文件目录。默认仅在未设置自定义日志文件位置时启用。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_6">故障排除<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<p>如果无法使初始化脚本正常工作，您应该尝试在<em>详细模式</em>下运行它们：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">sh -x /etc/init.d/celeryd start</span>
+</code></pre></div>
+<p>这可以揭示服务无法启动的原因。</p>
+<p>如果 worker 以 <em>"OK"</em> 启动但几乎立即退出，并且日志文件中没有证据，那么可能存在错误，但由于守护进程的标准输出已经关闭，您将无法在任何地方看到它们。对于这种情况，您可以使用 <code>C_FAKEFORK</code> 环境变量跳过守护进程步骤：</p>
+<div class="language-console highlight"><pre><span></span><code><span class="go">C_FAKEFORK=1 sh -x /etc/init.d/celeryd start</span>
+</code></pre></div>
+<p>现在您应该能够看到错误了。</p>
+<p>通常，此类错误是由文件读写权限不足、配置模块、用户模块、第三方库中的语法错误，甚至 Celery 本身引起的。</p>
+<h2 id="daemon-systemd-generic">使用 <code>systemd</code><a class="headerlink" href="#daemon-systemd-generic" title="Permanent link">&para;</a></h2>
+<p><strong>用法</strong>: <code>systemctl {start|stop|restart|status} celery.service</code></p>
+<p><strong>配置文件</strong>: <code>/etc/conf.d/celery</code></p>
+<h3 id="celeryservice">服务文件: celery.service<a class="headerlink" href="#celeryservice" title="Permanent link">&para;</a></h3>
+<p>这是一个示例的systemd文件：</p>
+<div class="language-bash highlight"><span class="filename">/etc/systemd/system/celery.service</span><pre><span></span><code><span class="o">[</span>Unit<span class="o">]</span>
+<span class="nv">Description</span><span class="o">=</span>Celery<span class="w"> </span>Service
+<span class="nv">After</span><span class="o">=</span>network.target
+
+<span class="o">[</span>Service<span class="o">]</span>
+<span class="nv">Type</span><span class="o">=</span>forking
+<span class="nv">User</span><span class="o">=</span>celery
+<span class="nv">Group</span><span class="o">=</span>celery
+<span class="nv">EnvironmentFile</span><span class="o">=</span>/etc/conf.d/celery
+<span class="nv">WorkingDirectory</span><span class="o">=</span>/opt/celery
+<span class="nv">ExecStart</span><span class="o">=</span>/bin/sh<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;${CELERY_BIN} -A $CELERY_APP multi start $CELERYD_NODES \</span>
+<span class="s1">    --pidfile=${CELERYD_PID_FILE} --logfile=${CELERYD_LOG_FILE} \</span>
+<span class="s1">    --loglevel=&quot;${CELERYD_LOG_LEVEL}&quot; $CELERYD_OPTS&#39;</span>
+<span class="nv">ExecStop</span><span class="o">=</span>/bin/sh<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;${CELERY_BIN} multi stopwait $CELERYD_NODES \</span>
+<span class="s1">    --pidfile=${CELERYD_PID_FILE} --logfile=${CELERYD_LOG_FILE} \</span>
+<span class="s1">    --loglevel=&quot;${CELERYD_LOG_LEVEL}&quot;&#39;</span>
+<span class="nv">ExecReload</span><span class="o">=</span>/bin/sh<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;${CELERY_BIN} -A $CELERY_APP multi restart $CELERYD_NODES \</span>
+<span class="s1">    --pidfile=${CELERYD_PID_FILE} --logfile=${CELERYD_LOG_FILE} \</span>
+<span class="s1">    --loglevel=&quot;${CELERYD_LOG_LEVEL}&quot; $CELERYD_OPTS&#39;</span>
+<span class="nv">Restart</span><span class="o">=</span>always
+
+<span class="o">[</span>Install<span class="o">]</span>
+<span class="nv">WantedBy</span><span class="o">=</span>multi-user.target
+</code></pre></div>
+<p>一旦你将该文件放入 <code>/etc/systemd/system</code>，你应该运行 <code>systemctl daemon-reload</code> 以便Systemd识别该文件。每次修改该文件时，你也应该运行该命令。如果你希望 celery 服务在系统（重新）启动时自动启动，请使用 <code>systemctl enable celery.service</code>。</p>
+<p>可选地，你可以为celery服务指定额外的依赖项：例如，如果你使用 RabbitMQ 作为代理，你可以在 <code>[Unit]</code> <a href="https://www.freedesktop.org/software/systemd/man/systemd.unit.html#%5BUnit%5D%20Section%20Options">systemd部分</a> 中的 <code>After=</code> 和 <code>Requires=</code> 中指定 <code>rabbitmq-server.service</code>。</p>
+<p>要配置用户、组、<code>chdir</code> 更改设置：在 <code>/etc/systemd/system/celery.service</code> 中定义的 <code>User</code>、<code>Group</code> 和 <code>WorkingDirectory</code>。</p>
+<p>你也可以使用 <code>systemd-tmpfiles</code> 来创建工作目录（用于日志和 pid 文件）。</p>
+<div class="language-bash highlight"><span class="filename">/etc/tmpfiles.d/celery.conf</span><pre><span></span><code>d<span class="w"> </span>/run/celery<span class="w"> </span><span class="m">0755</span><span class="w"> </span>celery<span class="w"> </span>celery<span class="w"> </span>-
+d<span class="w"> </span>/var/log/celery<span class="w"> </span><span class="m">0755</span><span class="w"> </span>celery<span class="w"> </span>celery<span class="w"> </span>-
+</code></pre></div>
+<h4 id="_7">示例配置<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h4>
+<p>这是一个Python项目的示例配置：</p>
+<div class="language-bash highlight"><span class="filename">/etc/conf.d/celery</span><pre><span></span><code><span class="c1"># 要启动的节点名称</span>
+<span class="c1"># 这里我们有一个单节点</span>
+<span class="nv">CELERYD_NODES</span><span class="o">=</span><span class="s2">&quot;w1&quot;</span>
+<span class="c1"># 或者我们可以有三个节点：</span>
+<span class="c1">#CELERYD_NODES=&quot;w1 w2 w3&quot;</span>
+
+<span class="c1"># &#39;celery&#39;命令的绝对或相对路径：</span>
+<span class="nv">CELERY_BIN</span><span class="o">=</span><span class="s2">&quot;/usr/local/bin/celery&quot;</span>
+<span class="c1">#CELERY_BIN=&quot;/virtualenvs/def/bin/celery&quot;</span>
+
+<span class="c1"># 要使用的应用实例</span>
+<span class="c1"># 如果不使用应用，请注释掉这一行</span>
+<span class="nv">CELERY_APP</span><span class="o">=</span><span class="s2">&quot;proj&quot;</span>
+<span class="c1"># 或者完全限定：</span>
+<span class="c1">#CELERY_APP=&quot;proj.tasks:app&quot;</span>
+
+<span class="c1"># 如何调用manage.py</span>
+<span class="nv">CELERYD_MULTI</span><span class="o">=</span><span class="s2">&quot;multi&quot;</span>
+
+<span class="c1"># 工作进程的额外命令行参数</span>
+<span class="nv">CELERYD_OPTS</span><span class="o">=</span><span class="s2">&quot;--time-limit=300 --concurrency=8&quot;</span>
+
+<span class="c1"># - %n 将被节点名称的第一部分替换。</span>
+<span class="c1"># - %I 将被当前子进程索引替换</span>
+<span class="c1">#   在使用prefork池时很重要，以避免竞争条件。</span>
+<span class="nv">CELERYD_PID_FILE</span><span class="o">=</span><span class="s2">&quot;/var/run/celery/%n.pid&quot;</span>
+<span class="nv">CELERYD_LOG_FILE</span><span class="o">=</span><span class="s2">&quot;/var/log/celery/%n%I.log&quot;</span>
+<span class="nv">CELERYD_LOG_LEVEL</span><span class="o">=</span><span class="s2">&quot;INFO&quot;</span>
+
+<span class="c1"># 你可能希望为Celery Beat添加这些选项</span>
+<span class="nv">CELERYBEAT_PID_FILE</span><span class="o">=</span><span class="s2">&quot;/var/run/celery/beat.pid&quot;</span>
+<span class="nv">CELERYBEAT_LOG_FILE</span><span class="o">=</span><span class="s2">&quot;/var/log/celery/beat.log&quot;</span>
+</code></pre></div>
+<h3 id="celerybeatservice">服务文件: celerybeat.service<a class="headerlink" href="#celerybeatservice" title="Permanent link">&para;</a></h3>
+<p>这是一个Celery Beat的示例systemd文件：</p>
+<div class="language-bash highlight"><span class="filename">/etc/systemd/system/celerybeat.service</span><pre><span></span><code><span class="o">[</span>Unit<span class="o">]</span>
+<span class="nv">Description</span><span class="o">=</span>Celery<span class="w"> </span>Beat<span class="w"> </span>Service
+<span class="nv">After</span><span class="o">=</span>network.target
+
+<span class="o">[</span>Service<span class="o">]</span>
+<span class="nv">Type</span><span class="o">=</span>simple
+<span class="nv">User</span><span class="o">=</span>celery
+<span class="nv">Group</span><span class="o">=</span>celery
+<span class="nv">EnvironmentFile</span><span class="o">=</span>/etc/conf.d/celery
+<span class="nv">WorkingDirectory</span><span class="o">=</span>/opt/celery
+<span class="nv">ExecStart</span><span class="o">=</span>/bin/sh<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;${CELERY_BIN} -A ${CELERY_APP} beat  \</span>
+<span class="s1">    --pidfile=${CELERYBEAT_PID_FILE} \</span>
+<span class="s1">    --logfile=${CELERYBEAT_LOG_FILE} --loglevel=${CELERYD_LOG_LEVEL}&#39;</span>
+<span class="nv">Restart</span><span class="o">=</span>always
+
+<span class="o">[</span>Install<span class="o">]</span>
+<span class="nv">WantedBy</span><span class="o">=</span>multi-user.target
+</code></pre></div>
+<p>一旦你将该文件放入 <code>/etc/systemd/system</code>，你应该运行 <code>systemctl daemon-reload</code> 以便 Systemd 识别该文件。每次修改该文件时，你也应该运行该命令。如果你希望 celery beat 服务在系统（重新）启动时自动启动，请使用 <code>systemctl enable celerybeat.service</code>。</p>
+<h2 id="root">使用超级用户权限（root）运行工作进程<a class="headerlink" href="#root" title="Permanent link">&para;</a></h2>
+<p>使用超级用户权限运行工作进程是一种非常危险的做法。应该总是有避免以 root 身份运行的解决方案。Celery 可能会在通过 pickle 序列化的消息中运行任意代码 - 这是危险的，尤其是在以 root 身份运行时。</p>
+<p>默认情况下，Celery不会以root身份运行工作进程。相关的错误消息可能不会在日志中可见，但如果使用了 <code>C_FAKEFORK</code> 则可能会看到。</p>
+<p>要强制 Celery 以 root 身份运行工作进程，请使用 <code>C_FORCE_ROOT</code>。</p>
+<p>当以 root 身份运行但没有 <code>C_FORCE_ROOT</code> 时，工作进程将显示以 <em>"OK"</em> 启动，但随后立即退出且无明显错误。这个问题可能会在新的开发或生产环境中（无意中）以root身份运行项目时出现。</p>
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../workers/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 工作进程">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                工作进程
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../periodic-tasks/" class="md-footer__link md-footer__link--next" aria-label="下一页: 周期性任务">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                周期性任务
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      译者 <a href="https://github.com/oaixnah" target="_blank">oaixnah</a>
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.tabs.link","navigation.instant","navigation.instant.prefetch","navigation.instant.progress","navigation.indexes","navigation.top","navigation.footer","navigation.tabs","navigation.expand","navigation.tracking","search.suggest","search.highlight","search.share","toc.follow"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"已复制","clipboard.copy":"复制","search.result.more.one":"在该页上还有 1 个符合条件的结果","search.result.more.other":"在该页上还有 # 个符合条件的结果","search.result.none":"没有找到符合条件的结果","search.result.one":"找到 1 个符合条件的结果","search.result.other":"# 个符合条件的结果","search.result.placeholder":"键入以开始搜索","search.result.term.missing":"缺少","select.version":"选择当前版本"},"version":null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.00c35305.min.js"></script>
+      
+    
+  </body>
+</html>
