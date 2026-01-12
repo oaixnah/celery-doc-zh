@@ -20,6 +20,9 @@ jobs:
           python-version: 3.x
       - run: pip install zensical
       - run: zensical build --clean
+        env:
+          GOOGLE_ANALYTICS_KEY: ${{ secrets.GOOGLE_ANALYTICS_KEY }}
+          CLARITY_PROJECT_ID: ${{ secrets.CLARITY_PROJECT_ID }}
       - name: Deploy to gh-deploy branch
         uses: peaceiris/actions-gh-pages@v4
         with:
