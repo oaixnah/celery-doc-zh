@@ -45,6 +45,7 @@ theme:
     - search.highlight
     - search.share
     - toc.follow
+  custom_dir: docs/.overrides
 markdown_extensions:
   - abbr
   - attr_list
@@ -72,9 +73,11 @@ markdown_extensions:
   - pymdownx.tilde
 plugins:
   - search
-  - exclude:
-      glob:
-        - '*_en.md'
+extra:
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_KEY
+    clarity: !ENV CLARITY_PROJECT_ID
 nav:
   - 首页: index.md
   - 快速入门:
