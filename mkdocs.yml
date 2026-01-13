@@ -114,3 +114,4 @@ nav:
       - 配置: user-guide/configuration.md
   - Django: django.md
   - QA: faq.md
+  - 贡献: contribute.md
