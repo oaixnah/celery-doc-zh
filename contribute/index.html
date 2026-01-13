@@ -6,42 +6,40 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Celery与Google Pub/Sub集成指南：详细说明如何配置和使用Google Cloud Pub/Sub作为Celery的消息代理，包括安装依赖、URL配置、资源过期设置、确认截止时间、轮询间隔调整以及使用注意事项。">
+        <meta name="description" content="Celery 中文文档">
       
       
         <meta name="author" content="oaixnah">
       
       
-        <link rel="canonical" href="https://celery.oaix.tech/getting-started/backends-and-brokers/gcpubsub/">
+        <link rel="canonical" href="https://celery.oaix.tech/contribute/">
       
       
-        <link rel="prev" href="../kafka/">
+        <link rel="prev" href="../faq/">
       
-      
-        <link rel="next" href="../../first-steps-with-celery/">
       
       
         
       
       
-      <link rel="icon" href="../../../assets/favicon.ico">
+      <link rel="icon" href="../assets/favicon.ico">
       <meta name="generator" content="zensical-0.0.15">
     
     
       
-        <title>使用 Google Pub/Sub - Celery 中文文档</title>
+        <title>贡献 - Celery 中文文档</title>
       
     
     
       
         
       
-      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.f1b6466b.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.f1b6466b.min.css">
       
         
           
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/modern/palette.dfe2e883.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/modern/palette.dfe2e883.min.css">
       
       
   
@@ -89,7 +87,7 @@
       
     
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
     
       
   
@@ -134,7 +132,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#google-pubsub" class="md-skip">
+        <a href="#_1" class="md-skip">
           跳转至
         </a>
       
@@ -148,9 +146,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../../.." title="Celery 中文文档" class="md-header__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+    <a href=".." title="Celery 中文文档" class="md-header__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
       
-  <img src="../../../assets/celery_128.png" alt="logo">
+  <img src="../assets/celery_128.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -167,7 +165,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              使用 Google Pub/Sub
+              贡献
             
           </span>
         </div>
@@ -261,7 +259,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../.." class="md-tabs__link">
+      <a href=".." class="md-tabs__link">
         
   
   首页
@@ -275,13 +273,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../introduction/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../getting-started/introduction/" class="md-tabs__link">
           
   
   快速入门
@@ -300,7 +296,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../user-guide/application/" class="md-tabs__link">
+        <a href="../user-guide/application/" class="md-tabs__link">
           
   
   用户指南
@@ -317,7 +313,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../django/" class="md-tabs__link">
+      <a href="../django/" class="md-tabs__link">
         
   
   Django
@@ -333,7 +329,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../faq/" class="md-tabs__link">
+      <a href="../faq/" class="md-tabs__link">
         
   
   QA
@@ -347,9 +343,11 @@
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../../../contribute/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   贡献
@@ -370,7 +368,9 @@
           
             
               
-              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden>
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
                     
@@ -381,9 +381,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="Celery 中文文档" class="md-nav__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
+    <a href=".." title="Celery 中文文档" class="md-nav__button md-logo" aria-label="Celery 中文文档" data-md-component="logo">
       
-  <img src="../../../assets/celery_128.png" alt="logo">
+  <img src="../assets/celery_128.png" alt="logo">
 
     </a>
     Celery 中文文档
@@ -410,7 +410,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -434,10 +434,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -453,20 +451,19 @@
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
   
@@ -484,7 +481,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -502,7 +499,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../introduction/" class="md-nav__link">
+      <a href="../getting-started/introduction/" class="md-nav__link">
         
   
   
@@ -527,8 +524,6 @@
                 
   
   
-    
-  
   
   
     
@@ -555,15 +550,17 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../getting-started/backends-and-brokers/" class="md-nav__link ">
               
   
   
@@ -587,7 +584,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -607,7 +604,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../redis/" class="md-nav__link">
+      <a href="../getting-started/backends-and-brokers/redis/" class="md-nav__link">
         
   
   
@@ -635,7 +632,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../rabbitmq/" class="md-nav__link">
+      <a href="../getting-started/backends-and-brokers/rabbitmq/" class="md-nav__link">
         
   
   
@@ -663,7 +660,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../sqs/" class="md-nav__link">
+      <a href="../getting-started/backends-and-brokers/sqs/" class="md-nav__link">
         
   
   
@@ -691,7 +688,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../kafka/" class="md-nav__link">
+      <a href="../getting-started/backends-and-brokers/kafka/" class="md-nav__link">
         
   
   
@@ -716,37 +713,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Google Pub/Sub
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../getting-started/backends-and-brokers/gcpubsub/" class="md-nav__link">
         
   
   
@@ -762,132 +732,6 @@
   
 
       </a>
-      
-        
-
-
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        安装
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        配置
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        选项
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="选项">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        资源过期
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        确认截止时间
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        轮询间隔
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        队列前缀
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        结果
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        注意事项
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -908,7 +752,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../first-steps-with-celery/" class="md-nav__link">
+      <a href="../getting-started/first-steps-with-celery/" class="md-nav__link">
         
   
   
@@ -936,7 +780,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../next-steps/" class="md-nav__link">
+      <a href="../getting-started/next-steps/" class="md-nav__link">
         
   
   
@@ -1059,7 +903,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/application/" class="md-nav__link">
+      <a href="../user-guide/application/" class="md-nav__link">
         
   
   
@@ -1087,7 +931,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/tasks/" class="md-nav__link">
+      <a href="../user-guide/tasks/" class="md-nav__link">
         
   
   
@@ -1115,7 +959,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/calling/" class="md-nav__link">
+      <a href="../user-guide/calling/" class="md-nav__link">
         
   
   
@@ -1143,7 +987,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/canvas/" class="md-nav__link">
+      <a href="../user-guide/canvas/" class="md-nav__link">
         
   
   
@@ -1171,7 +1015,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/workers/" class="md-nav__link">
+      <a href="../user-guide/workers/" class="md-nav__link">
         
   
   
@@ -1199,7 +1043,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/daemonizing/" class="md-nav__link">
+      <a href="../user-guide/daemonizing/" class="md-nav__link">
         
   
   
@@ -1227,7 +1071,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/periodic-tasks/" class="md-nav__link">
+      <a href="../user-guide/periodic-tasks/" class="md-nav__link">
         
   
   
@@ -1255,7 +1099,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/routing/" class="md-nav__link">
+      <a href="../user-guide/routing/" class="md-nav__link">
         
   
   
@@ -1283,7 +1127,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/monitoring/" class="md-nav__link">
+      <a href="../user-guide/monitoring/" class="md-nav__link">
         
   
   
@@ -1311,7 +1155,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/security/" class="md-nav__link">
+      <a href="../user-guide/security/" class="md-nav__link">
         
   
   
@@ -1339,7 +1183,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/optimizing/" class="md-nav__link">
+      <a href="../user-guide/optimizing/" class="md-nav__link">
         
   
   
@@ -1367,7 +1211,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/debugging/" class="md-nav__link">
+      <a href="../user-guide/debugging/" class="md-nav__link">
         
   
   
@@ -1422,7 +1266,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../user-guide/concurrency/" class="md-nav__link ">
+            <a href="../user-guide/concurrency/" class="md-nav__link ">
               
   
   
@@ -1466,7 +1310,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/concurrency/eventlet/" class="md-nav__link">
+      <a href="../user-guide/concurrency/eventlet/" class="md-nav__link">
         
   
   
@@ -1494,7 +1338,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/concurrency/gevent/" class="md-nav__link">
+      <a href="../user-guide/concurrency/gevent/" class="md-nav__link">
         
   
   
@@ -1530,7 +1374,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/signals/" class="md-nav__link">
+      <a href="../user-guide/signals/" class="md-nav__link">
         
   
   
@@ -1558,7 +1402,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/testing/" class="md-nav__link">
+      <a href="../user-guide/testing/" class="md-nav__link">
         
   
   
@@ -1586,7 +1430,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/extending/" class="md-nav__link">
+      <a href="../user-guide/extending/" class="md-nav__link">
         
   
   
@@ -1614,7 +1458,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/configuration/" class="md-nav__link">
+      <a href="../user-guide/configuration/" class="md-nav__link">
         
   
   
@@ -1649,7 +1493,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../django/" class="md-nav__link">
+      <a href="../django/" class="md-nav__link">
         
   
   
@@ -1676,7 +1520,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../faq/" class="md-nav__link">
+      <a href="../faq/" class="md-nav__link">
         
   
   
@@ -1700,10 +1544,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../../contribute/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    贡献
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1719,6 +1590,60 @@
   
 
       </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#trae" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trae 插件
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#llm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#edgeone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EdgeOne
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1730,6 +1655,8 @@
               </div>
             
             
+              
+                
               
               <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
                 <div class="md-sidebar__scrollwrap">
@@ -1751,10 +1678,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
+  <a href="#trae" class="md-nav__link">
     <span class="md-ellipsis">
       
-        安装
+        Trae 插件
       
     </span>
   </a>
@@ -1762,10 +1689,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#llm" class="md-nav__link">
     <span class="md-ellipsis">
       
-        配置
+        LLM
       
     </span>
   </a>
@@ -1773,82 +1700,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#edgeone" class="md-nav__link">
     <span class="md-ellipsis">
       
-        选项
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="选项">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        资源过期
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        确认截止时间
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        轮询间隔
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        队列前缀
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        结果
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        注意事项
+        EdgeOne
       
     </span>
   </a>
@@ -1873,86 +1728,17 @@
   
 
 
-<h1 id="google-pubsub">使用 Google Pub/Sub<a class="headerlink" href="#google-pubsub" title="Permanent link">&para;</a></h1>
-<h2 id="_1">安装<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
-<p>要支持 Google Pub/Sub，您需要安装额外的依赖项。您可以使用 <code>celery[gcpubsub]</code> 一次性安装 Celery 和这些依赖项：</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">uv</label><label for="__tabbed_1_2">pip</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="language-console highlight"><pre><span></span><code><span class="go">uv add &quot;celery[gcpubsub]&quot;</span>
-</code></pre></div>
-</div>
-<div class="tabbed-block">
-<div class="language-console highlight"><pre><span></span><code><span class="go">pip install &quot;celery[gcpubsub]&quot;</span>
-</code></pre></div>
-</div>
-</div>
-</div>
-<h2 id="_2">配置<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
-<p>您必须在代理 URL 中指定 gcpubsub 和 Google 项目：</p>
-<div class="language-python highlight"><pre><span></span><code><span class="n">broker_url</span> <span class="o">=</span> <span class="s1">&#39;gcpubsub://projects/project-id&#39;</span>
-</code></pre></div>
-<p>URL 格式为：</p>
-<div class="language-text highlight"><pre><span></span><code>gcpubsub://projects/project-id
-</code></pre></div>
-<p>请注意，您必须在 URL 中为 project-id 添加 <code>projects/</code> 前缀。</p>
-<p>登录凭据将是您在环境中设置的常规 GCP 凭据。</p>
-<h2 id="_3">选项<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
-<h3 id="_4">资源过期<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
-<p>默认设置旨在尽可能简单、经济高效且直观，以便"开箱即用"。Pub/Sub 消息和订阅设置为 24 小时后过期，可以通过配置 <code>expiration_seconds</code> 设置来调整：</p>
-<div class="language-python highlight"><pre><span></span><code><span class="n">expiration_seconds</span> <span class="o">=</span> <span class="mi">86400</span>
-</code></pre></div>
-<div class="admonition note">
-<p class="admonition-title"><a href="https://cloud.google.com/pubsub/docs" target="_blank">Google Cloud Pub/Sub 设置的概述</a></p>
-</div>
-<h3 id="_5">确认截止时间<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
-<p><code>ack_deadline_seconds</code> 定义了 Pub/Sub 基础设施在将消息重新传递给另一个工作器之前，应等待工作器确认任务的秒数。</p>
-<p>此选项通过 <a href="../../../user-guide/configuration/#broker_transport_options"><code>broker_transport_options</code></a> 设置进行配置：</p>
-<div class="language-python highlight"><pre><span></span><code><span class="n">broker_transport_options</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ack_deadline_seconds&#39;</span><span class="p">:</span> <span class="mi">60</span><span class="p">}</span>  <span class="c1"># 1 分钟。</span>
-</code></pre></div>
-<p>默认的可见性超时为 240 秒，工作器会自动延长其所有待处理消息的确认时间。</p>
-<div class="admonition note">
-<p class="admonition-title"><a href="https://cloud.google.com/pubsub/docs/lease-management" target="_blank">Pub/Sub 截止时间的概述</a></p>
-</div>
-<h3 id="_6">轮询间隔<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
-<p>轮询间隔决定了在轮询失败之间休眠的秒数。此值可以是整数或浮点数。默认值为 <em>0.1 秒</em>。但这并不意味着当没有更多消息可读时，工作器会每 0.1 秒轰炸 Pub/Sub API，因为它会被对 Pub/Sub API 的阻塞调用所阻塞，该调用只会在有新消息可读或 10 秒后返回。</p>
-<p>轮询间隔可以通过 <a href="../../../user-guide/configuration/#broker_transport_options"><code>broker_transport_options</code></a> 设置进行配置：</p>
-<div class="language-python highlight"><pre><span></span><code><span class="n">broker_transport_options</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;polling_interval&#39;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">}</span>
-</code></pre></div>
-<p>非常频繁的轮询间隔可能导致<em>忙循环</em>，导致工作器使用大量 CPU 时间。如果您需要亚毫秒级的精度，应考虑使用其他传输方式，如 <a href="../rabbitmq/" target="_blank">RabbitMQ</a> 或 <a href="../redis/" target="_blank">Redis</a>。</p>
-<h3 id="_7">队列前缀<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
-<p>默认情况下，Celery 会为队列名称分配 <code>kombu-</code> 前缀。如果您有其他使用 Pub/Sub 的服务，可以通过 <a href="../../../user-guide/configuration/#broker_transport_options"><code>broker_transport_options</code></a> 设置进行配置：</p>
-<div class="language-python highlight"><pre><span></span><code><span class="n">broker_transport_options</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;queue_name_prefix&#39;</span><span class="p">:</span> <span class="s1">&#39;kombu-&#39;</span><span class="p">}</span>
-</code></pre></div>
-<h3 id="_8">结果<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
-<p>Google Cloud Storage (GCS) 可能是存储结果的一个不错的选择。。</p>
-<h2 id="_9">注意事项<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
-<ul>
-<li>
-<p>使用 celery flower 时，需要 --inspect-timeout=10 选项才能正确检测工作器状态。</p>
-</li>
-<li>
-<p>GCP 订阅的空闲订阅（没有排队的消息）配置为 24 小时后删除。
-  这旨在降低成本。</p>
-</li>
-<li>
-<p>排队和未确认的消息设置为 24 小时后自动清理。
-  原因同上。</p>
-</li>
-<li>
-<p>通道队列大小是近似值，可能不准确。
-  原因是 Pub/Sub API 不提供获取订阅中确切消息数量的方法。</p>
-</li>
-<li>
-<p>孤儿（无订阅）Pub/Sub 主题不会被自动删除！！
-  由于 GCP 对每个项目引入了 10k 个主题的硬限制，
-  建议定期手动删除孤儿主题。</p>
-</li>
-<li>
-<p>最大消息大小限制为 10MB，作为解决方法，您可以使用 GCS 后端
-  将消息存储在 GCS 中，并将 GCS URL 传递给任务。</p>
-</li>
-</ul>
+<h1 id="_1">贡献<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h2 id="trae">Trae 插件<a class="headerlink" href="#trae" title="Permanent link">&para;</a></h2>
+<p><a href="https://docs.trae.cn/ide/agent-overview" target="_blank">Builder 插件</a> 提供 Agent 编辑文件的能力。</p>
+<h2 id="llm">LLM<a class="headerlink" href="#llm" title="Permanent link">&para;</a></h2>
+<p><a href="https://api-docs.deepseek.com/zh-cn/news/news250922" target="_blank">DeepSeek-V3.1</a> 语言翻译的能力。</p>
+<h2 id="edgeone">EdgeOne<a class="headerlink" href="#edgeone" title="Permanent link">&para;</a></h2>
+<p><a href="https://edgeone.cloud.tencent.com/pages/document/162936635171454976" target="_blank">EdgeOne Pages</a> 提供免费的静态网站托管服务。</p>
+<hr />
+<figure><a href="https://curl.qcloud.com/oCDzq3AF" target="_blank"><img alt="Image title" src=".././assets/tencent_sp_580_400.png" width="600" /></a><figcaption>【腾讯云】云服务器、云数据库、COS、CDN、短信等云产品特惠热卖中</figcaption></figure>
+
+  
 
 
 
@@ -1969,6 +1755,8 @@
 
   
 
+
+  
 
 
 
@@ -1994,10 +1782,12 @@
   
     
       
+        
+      
       <nav class="md-footer__inner md-grid" aria-label="页脚" >
         
           
-          <a href="../kafka/" class="md-footer__link md-footer__link--prev" aria-label="上一页: Kafka">
+          <a href="../faq/" class="md-footer__link md-footer__link--prev" aria-label="上一页: QA">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
@@ -2007,27 +1797,11 @@
                 上一页
               </span>
               <div class="md-ellipsis">
-                Kafka
+                QA
               </div>
             </div>
           </a>
         
-        
-          
-          <a href="../../first-steps-with-celery/" class="md-footer__link md-footer__link--next" aria-label="下一页: 快速上手">
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                下一页
-              </span>
-              <div class="md-ellipsis">
-                快速上手
-              </div>
-            </div>
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </div>
-          </a>
         
       </nav>
     
@@ -2064,10 +1838,10 @@
       
       
       
-      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["content.code.annotate","content.code.copy","content.tabs.link","navigation.instant","navigation.instant.prefetch","navigation.instant.progress","navigation.indexes","navigation.top","navigation.footer","navigation.tabs","navigation.expand","navigation.tracking","search.suggest","search.highlight","search.share","toc.follow"],"search":"../../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"已复制","clipboard.copy":"复制","search.result.more.one":"在该页上还有 1 个符合条件的结果","search.result.more.other":"在该页上还有 # 个符合条件的结果","search.result.none":"没有找到符合条件的结果","search.result.one":"找到 1 个符合条件的结果","search.result.other":"# 个符合条件的结果","search.result.placeholder":"键入以开始搜索","search.result.term.missing":"缺少","select.version":"选择当前版本"},"version":null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["content.code.annotate","content.code.copy","content.tabs.link","navigation.instant","navigation.instant.prefetch","navigation.instant.progress","navigation.indexes","navigation.top","navigation.footer","navigation.tabs","navigation.expand","navigation.tracking","search.suggest","search.highlight","search.share","toc.follow"],"search":"../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"已复制","clipboard.copy":"复制","search.result.more.one":"在该页上还有 1 个符合条件的结果","search.result.more.other":"在该页上还有 # 个符合条件的结果","search.result.none":"没有找到符合条件的结果","search.result.one":"找到 1 个符合条件的结果","search.result.other":"# 个符合条件的结果","search.result.placeholder":"键入以开始搜索","search.result.term.missing":"缺少","select.version":"选择当前版本"},"version":null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.00c35305.min.js"></script>
+      <script src="../assets/javascripts/bundle.00c35305.min.js"></script>
       
     
   </body>
